@@ -9,6 +9,8 @@
 
 The medullas come from the manufactures almost ready to go; there's just a few finishing touches that need to be done before they'll be ready for an EtherCAT bus.  Below is an example of the raw system after assembly.
 
+Before beginning the process to finish the boards it would be wise to preform a continuity test on each power rail.  Using a multi-meter, check to see if the 3.3v, 5v, or Vin is shorted to ground.  If any of the voltage rails are shorted to ground, label this and set the board aside and find another to work with.  It's also recommended that the continuity between voltage rails be check as well.  Again if any are shorted together, label it and set it aside.
+
 [https://lh3.googleusercontent.com/-dfbs_hGJ46k/Tn43BG7QtsI/AAAAAAAABPo/ZMLql6MFIZk/s400/DSCN1316.JPG]
 
 
@@ -35,3 +37,5 @@ The final step is to solder in the connectors.  This can be a little tricky beca
 
 
 = Testing =
+
+The very first test 
