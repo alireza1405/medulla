@@ -3,8 +3,6 @@
 #ifndef FUNCS_H_UCONTROLLER
 #define FUNCS_H_UCONTROLLER
 
-// Medulla IDs
-#define MEDULLA_FCA_ID 				0xFC
 
 // Command bytes.
 // During normal running, the controller should switch between sending the two run mode bytes
@@ -42,57 +40,6 @@
 
 #define MOTOR_TORQUE				motor
 
-// Medulla A sensors:
-#define MIN_LEG_SEG_COURSE_COUNT	6098
-#define MAX_LEG_SEG_COURSE_COUNT	9144
-
-//TODO: the angles are total junk
-#define MIN_LEG_SEG_COUNT			7080
-#define MAX_LEG_SEG_COUNT			21594
-#define MIN_LEG_SEG_ANGLE			3.70
-#define MAX_LEG_SEG_ANGLE			1.47
-
-#define MIN_TRAN_COUNT			2388
-#define MAX_TRAN_COUNT			15560
-#define MIN_TRAN_ANGLE			1.5707
-#define MAX_TRAN_ANGLE			3.6
-
-
-// These are the rough ranges of motion for the zero force leg segments.
-//  E.g. they are the leg angle counts when the transmission is at the limits
-//  and the spring is uncompressed.
-#define MIN_TRAN_SEG_COUNT		6290
-#define MAX_TRAN_SEG_COUNT		8945
-
-
-// Need to set these during sensor calibration if you want the spring deflections
-// to be computed accurately.  Add these offsets to the transmission angle.
-//#define TRAN_OFF_ANGLE			-0.028043331476324
-#define TRAN_OFF_ANGLE			0.
-
-
-
-// For motors
-#define MTR_DIR_bm					(1<<15)
-#define MTR_MIN_TRQ					-19.3
-#define MTR_MAX_TRQ  				19.3
-
-#define MTR_MIN_CNT					100
-#define MTR_MAX_CNT 				19900
-#define MTR_ZERO_CNT				10000
-
-// This should only be just enough torque to hold the leg up.
-#define AMPS_OPEN					1.1
-#define PWM_OPEN					((uint16_t)(MTR_ZERO_CNT + (AMPS_OPEN / (MTR_MAX_TRQ/(MTR_ZERO_CNT))) ))
-
-
-// For handling rollover of encoders
-#define ROLLOVER13BIT_THRESHOLD		4096
-#define MAX_13BIT					8192
-#define ROLLOVER16BIT_THRESHOLD		32768
-#define MAX_16BIT					65536
-
-#define SEC_PER_CNT					125E-9
 
 // For GCC running on a 32-bit machine to minimize the size in memory of these structs, the smallest
 // values must be last.  This is important for compatability with the avr-gcc compiled code.

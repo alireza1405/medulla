@@ -5,6 +5,7 @@
 #ifndef MENIAL_IO_H
 #define MENIAL_IO_H
 
+#include "./ucontroller.h"
 
 // All limit switches are on port K
 #define PORT_LIMIT		PORTK
