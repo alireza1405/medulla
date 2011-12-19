@@ -1,0 +1,3 @@
+#summary List of errors on the Medulla 1.5
+
+* The pin marked F6 on the breakout header is connected to pin F7 on the XMega and pin F7 on the header is connected to pin F6
