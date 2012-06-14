@@ -2,7 +2,7 @@
 
 = Introduction =
 
-The Medulla Firmware Library is written to help users develop firmware for the ATxmega128a1 on the medulla board. In particular the library focuses on providing firmware drivers to interface with robotics hardware.
+The Medulla Firmware Library is written to help users develop firmware for the ATxmega128a1 on the medulla board. In particular the library focuses on providing firmware drivers to interface with robotics hardware. This library is currently under development. Right now the goal is to re-implement the drivers in the medulla.1.5.1 directory and a cleaner more useful way.
 
 = Implementation Guidelines =
 
@@ -21,3 +21,7 @@ The following is an initial list of drivers that will be implemented in the Medu
     This driver implements the BISS-C interface to read encoders on any of XMega's SPI ports.
   * *SSI encoder driver*
     The SSI encoder driver implements the SSI protocol on an SPI port to read data from an encoder.
+  * *EtherCAT driver*
+    This driver implements the SPI protocol between the XMega and the EtherCAT slave chip on the Medulla board. It also manages the mapping between variables in XMega memory and the EtherCAT PDOs.
+  * *Serial driver*
+    The serial driver uses any of the available USARTS to implement RS232 communication.
