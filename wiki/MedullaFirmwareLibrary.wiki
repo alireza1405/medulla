@@ -10,6 +10,9 @@ In most cases program execution speed will be very important in programs using t
 
 Wherever not absolutely necessary, all drivers should store it's data in structs managed by the user program. The users program should be able to use hardware drivers multiple times on different IO simply by passing around a struct containing the configuration. This should allow for the most flexibility.
 
+ * Tabs should be used for all indents
+ * Java style syntax should be used for curly brackets (open bracket should be on the line of the function name and the close bracket should be on the line following the last line of the function).
+
 = Hardware Drivers =
 
 The following is an initial list of drivers that will be implemented in the Medulla Firmware Library:
