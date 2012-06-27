@@ -2,11 +2,13 @@
 
 = Introduction =
 
-The Medulla Firmware Library is written to help users develop firmware for the ATxmega128a1 on the medulla board. In particular the library focuses on providing firmware drivers to interface with robotics hardware. This library is currently under development. Right now the goal is to re-implement the drivers in the medulla.1.5.1 directory and a cleaner more useful way.
+The Medulla Firmware Library is written to help users develop firmware for the ATxmega128a1 on the medulla board. In particular the library focuses on providing firmware drivers to interface with robotics hardware. This library is currently under development. Right now the goal is to re-implement the drivers in the medulla.1.5.1 directory and a  cleaner more useful way.
 
 = Implementation Guidelines =
 
 In most cases program execution speed will be very important in programs using the Medulla Firmware Library. Unless absolutely necessarily library functions should not block program execution. Additionally, wherever possible the interrupts, hardware peripherals, DMA, and event system in the XMega should be used. This will ensure a minimal impact on firmware performance, and make the most out of the XMega hardware.
+
+Wherever not absolutely necessary, all drivers should store it's data in structs managed by the user program. The users program should be able to use hardware drivers multiple times on different IO simply by passing around a struct containing the configuration. This should allow for the most flexibility.
 
 = Hardware Drivers =
 
