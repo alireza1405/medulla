@@ -101,7 +101,7 @@ CSTANDARD = -std=gnu99
 
 
 # Place -D or -U options here for C sources
-CDEFS = -DF_CPU=$(F_CPU)UL -D_AVR_
+CDEFS = -DF_CPU=$(F_CPU)UL
 
 
 # Place -D or -U options here for ASM sources
@@ -139,6 +139,7 @@ CFLAGS += -Wall
 CFLAGS += -Wa,-adhlns=$(<:%.c=$(OBJDIR)/%.lst)
 CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS))
 CFLAGS += $(CSTANDARD)
+CFLAGS += -include stdint.h
 
 
 #---------------- Compiler Options C++ ----------------
