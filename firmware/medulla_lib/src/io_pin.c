@@ -1,4 +1,4 @@
-#include "../include/io_pin.h"
+#include "io_pin.h"
 
 inline void io_set_direction (io_pin_t pin, io_pin_direction_t direction) {
 	(*((uint8_t*)pin.io_port+direction)) = 1<<pin.pin;
@@ -9,6 +9,10 @@ inline void io_set_direction (io_pin_t pin, io_pin_direction_t direction) {
 
 inline void io_set_output (io_pin_t pin, io_pin_level_t level) {
 	(*((uint8_t*)pin.io_port+6+level)) = 1<<pin.pin;
+}
+
+inline void io_toggle_output(io_pin_t pin) {
+	pin.io_port->OUTTGL = 1<<pin.pin;
 }
 
 inline io_pin_level_t io_get_input(io_pin_t pin) {
