@@ -32,17 +32,21 @@ typedef struct {
 	PORT_t *spi_port; 			/**< IO port containing the SPI pins */
 	SPI_t *spi_register;			/**< SPI register address */
 	bool uses_chip_select;			/**< This bool specifies if the chip select should be used */
+	bool transaction_underway;		/**< If there is currently an ongoing transaction */
+} spi_port_t;
+
+// Stores pointers and sizes of an SPI port's tx and rx buffers
+typedef struct {
 	uint8_t *tx_buffer;			/**< Pointer to the address of the tx buffer */
 	uint8_t tx_buffer_size;			/**< Length of tx buffer, length must be < 255 bytes */
 	uint8_t *rx_buffer;			/**< Pointer to the address of the rx buffer */
 	uint8_t rx_buffer_size;			/**< Length of rx buffer, length must be < 255 bytes */
 	uint8_t io_buffer_position;		/**< Current read/write position in the rx buffer */
-	spi_callback_t io_complete_callback;	/**< Fuction pointer called when io completes */
-	bool transaction_underway;		/**< If there is currently an ongoing transaction */
-} spi_port_t;
+	spi_port_t *spi_port;
+} spi_buffer_t;
 
 // Stores poitners to spi_port_t structs used inside interrupts
-spi_port_t *_spi_port_c, *_spi_port_d, *_spi_port_e, *_spi_port_f;
+spi_buffer_t _spi_buffer_c, _spi_buffer_d, _spi_buffer_e, _spi_buffer_f;
 
 /// Initilizes a hardware SPI port on the xMega
 /** This function sets up a spi_port_t struct and also initilizes the SPI
@@ -50,10 +54,7 @@ spi_port_t *_spi_port_c, *_spi_port_d, *_spi_port_e, *_spi_port_f;
  *  spi_port_t structs. If it is not used, then the hardware may not be
  *  configured correctly.
  */
-spi_port_t spi_init_port(PORT_t *spi_port, 
-			SPI_t *spi_register,
-			bool  uses_chip_select,
-			spi_callback_t io_complete_callback);
+spi_port_t spi_init_port(PORT_t *spi_port, SPI_t *spi_register, bool  uses_chip_select);
 
 /// Starts transmitting data_length bytes starting at address of data
 /** This function starts a transmit trnsaction. If the spi_port is currently
@@ -78,6 +79,7 @@ int spi_start_receive(spi_port_t *spi_port, uint8_t *data, uint8_t data_length);
  */ 
 int spi_start_transmit_receive(spi_port_t *spi_port, uint8_t *tx_data, uint8_t tx_data_length, uint8_t *rx_data, uint8_t rx_data_length); 
 
-
+/// Configures the buffers for a spi port
+void _spi_configure_buffers(spi_buffer_t *spi_buffer, uint8_t *tx_data, uint8_t tx_data_length, uint8_t *rx_data, uint8_t rx_data_length);
 
 #endif //SPI_H
