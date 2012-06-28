@@ -10,7 +10,7 @@
 
 /// Struct containing all the important information about a pin.
 /** The io_pin_t type is a struct that can be used to describe any GPIO pin on
- *  the xMega. Once the struct has been initilized using the io_create_pin macro
+ *  the xMega. Once the struct has been initilized using the io_init_pin macro
  *  it contains pointers to all of the addresses nessesary to use the pin.
  */
 typedef struct {
@@ -43,18 +43,18 @@ typedef enum {
 } io_pin_level_t;
 
 /// Macro for initilizing an io_pin_t struct.
-/** The IO_create_pin macro creates a struct definition for an io_pin_t struct.
+/** The IO_init_pin macro creates a struct definition for an io_pin_t struct.
  *  This is the preferred way to initilize an io_pin_t because it ensures that
  *  all the nessesary values will be in place.
  */
-#define io_create_pin(port, pin) {&port, pin, &(port.PIN##pin##CTRL)}
+#define io_init_pin(port, pin) {&port, pin, &(port.PIN##pin##CTRL)}
 
 /// Sets the direction of a DIO pin.
 /** This is an inline function which set's the direciton of an xMega IO pin.
  *  @param pin The io_pin_t struct for the pin being configured.
  *  @param direction Direction that the pin should be set to.
  */
-inline void io_set_direction(io_pin_t pin, io_pin_direction_t direction);
+void io_set_direction(io_pin_t pin, io_pin_direction_t direction);
 
 /// Sets the digital logic level of an output pin.
 /** This function sets the output logic level of an IO pin assuming that the pin
@@ -62,7 +62,13 @@ inline void io_set_direction(io_pin_t pin, io_pin_direction_t direction);
  *  @param pin Pin of which to set the logic level.
  *  @param level The logic level to set the pin to.
  */
-inline void io_set_output(io_pin_t pin, io_pin_level_t level);
+void io_set_output(io_pin_t pin, io_pin_level_t level);
+
+/// Toggles a DIO output
+/** This function toggles an IO pin from high to low, or low to high. This
+ *  function only works if the pin has already been configured as an output.
+ */
+void io_toggle_output(io_pin_t pin);
 
 /// Gets the logic level of a DIO pin
 /** This function gets the logic level of any DIO pin. If the pin is configured
@@ -70,14 +76,14 @@ inline void io_set_output(io_pin_t pin, io_pin_level_t level);
  *  returns the output value of the pin.
  *  @param pin The pin of which to read the logic level.
  */
-inline io_pin_level_t io_get_input(io_pin_t pin);
+io_pin_level_t io_get_input(io_pin_t pin);
 
 /// Enables the internal pullup resistor on a pin
 /// @param pin Pin of which to enable the pullup on.
-inline void io_pin_enable_pullup(io_pin_t pin);
+void io_pin_enable_pullup(io_pin_t pin);
 
 /// Disables the internal pullup resistor on a pin.
 /// @param pin Pin of which to disable to pullup resistor.
-inline void io_pin_disable_pullup(io_pin_t pin);
+void io_pin_disable_pullup(io_pin_t pin);
 
 #endif // IO_PIN_H
