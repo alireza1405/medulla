@@ -11,6 +11,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 /// Possibe baud rates. The values of this enum are 16 bit values that relate to the
 /// baude rate registers.
@@ -53,6 +54,7 @@ typedef struct {
 
 /// Buffer information structs for each possible serial port
 uart_buffer_t _uart_buffer_c0, _uart_buffer_c1, _uart_buffer_d0, _uart_buffer_d1, _uart_buffer_e0, _uart_buffer_e1, _uart_buffer_f0, _uart_buffer_f1;
+
 
 #define _UART_TX_HANDLER(_UART_REG, _UART_BUFFER) \
 	if (_UART_BUFFER.tx_buffer_start != _UART_BUFFER.tx_buffer_end) { \
@@ -154,31 +156,27 @@ ISR(USARTF1_RXC_vect) {
 #endif
 
 /// Initilize serial port, it still needs to be connected to the interrupt
-uart_port_t uart_init_port(PORT_t *port_reg, USART_t *uart_reg, uart_baud_t baud_rate,uint8_t *tx_buffer, uint8_t tx_buffer_length, uint8_t *rx_buffer, uint8_t rx_buffer_length);
+uart_port_t uart_init_port(PORT_t *port_reg, USART_t *uart_reg, uart_baud_t baud_rate, void *tx_buffer, uint8_t tx_buffer_length, void *rx_buffer, uint8_t rx_buffer_length);
 
 /// This function connects a serial port to the usart interrupt so it can send and receive data.
 /// Returns -1 if the hardware is already being used. Returns 0 on success.
-int uart_connect_port(uart_port_t *port);
+int uart_connect_port(uart_port_t *port, bool use_for_stdio);
 
 /// This function disconnects a uart port from the hardware interrupts
 /// Returns -1 if the port wasn't connected in the first place, 0 on sucess
 int uart_disconnect_port(uart_port_t *port);
 
 /// Copy data from a buffer into the tx buffer for transmit.
-int uart_tx_data(uart_port_t *port, uint8_t *data, uint8_t data_length);
+int uart_tx_data(uart_port_t *port, void *data, uint8_t data_length);
 
 /// Put a single buffer into the tx buffer
 int uart_tx_byte(uart_port_t *port, uint8_t data);
 
 /// Get an arbitrary number of bytes out of the rx buffer. If there is not that much data in the
 /// buffer, then the number of bytes received is returned.
-int uart_rx_data(uart_port_t *port, uint8_t *data, uint8_t data_length);
+int uart_rx_data(uart_port_t *port, void *data, uint8_t data_length);
 
 /// Get a byte from the rx buffer
 uint8_t uart_rx_byte(uart_port_t *port);
-
-
-/// Internal function to get a pointer to the hardware buffer struct
-uart_buffer_t* _uart_get_hw_buffer(uart_port_t *port);
 
 #endif //UART_H
