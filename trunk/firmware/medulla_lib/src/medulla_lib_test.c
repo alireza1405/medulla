@@ -19,12 +19,11 @@ int main(void) {
 	uint16_t size = 0;
 	uart_port_t debug_port = uart_init_port(&PORTE, &USARTE0, uart_baud_115200, outbuffer, 32, inbuffer, 8);
 
-	uart_connect_port(&debug_port);
+	uart_connect_port(&debug_port, true);
 	while (1) {
-		//size = uart_rx_data(&debug_port, data, 7);
-		//uart_tx_data(&debug_port,data,size) ;
-		uart_tx_byte(&debug_port,uart_rx_byte(&debug_port));
-		_delay_ms(100);
+		size = uart_rx_data(&debug_port, data, 7);
+		uart_tx_data(&debug_port,data,size) ;
+		_delay_ms(1000);
 	}
 	return 1;
 }
