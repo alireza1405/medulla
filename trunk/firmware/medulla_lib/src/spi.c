@@ -25,29 +25,37 @@
 	PORTC.OUTCLR = 1;\
 	reti(); \
 
+#ifdef SPI_USING_PORTC
 ISR(SPIC_INT_vect, ISR_NAKED) {
 	#define _SPI SPIC
 	_SPI_HANDLE_INTERRUPT(_spi_buffer_c);
 	#undef _SPI
 }
+#endif
 
+#ifdef SPI_USING_PORTD
 ISR(SPID_INT_vect,ISR_NAKED) {
 	#define _SPI SPIF
 	_SPI_HANDLE_INTERRUPT(_spi_buffer_d);
 	#undef _SPI
 }
+#endif
 
+#ifdef SPI_USING_PORTE
 ISR(SPIE_INT_vect,ISR_NAKED) {
 	#define _SPI SPIE
 	_SPI_HANDLE_INTERRUPT(_spi_buffer_e);
 	#undef _SPI
 }
+#endif
 
+#ifdef SPI_USING_PORTF
 ISR(SPIF_INT_vect,ISR_NAKED) {
 	#define _SPI SPIF
 	_SPI_HANDLE_INTERRUPT(_spi_buffer_f);
 	#undef _SPI
 }
+#endif
 
 spi_port_t spi_init_port(PORT_t *spi_port, SPI_t *spi_register, bool uses_chip_select) {
 	// Store values into the spi_port_t struct
@@ -64,7 +72,7 @@ spi_port_t spi_init_port(PORT_t *spi_port, SPI_t *spi_register, bool uses_chip_s
 
 	// Configure the SPI registers
 	port.spi_register->CTRL = SPI_ENABLE_bm | SPI_MASTER_bm | SPI_MODE_0_gc | SPI_PRESCALER_DIV4_gc;// | SPI_CLK2X_bm;
-	port.spi_register->INTCTRL = SPI_INTLVL_HI_gc;
+	port.spi_register->INTCTRL = SPI_INTLVL_MED_gc;
 	
 	return port;
 }

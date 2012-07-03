@@ -48,6 +48,65 @@ typedef struct {
 // Stores poitners to spi_port_t structs used inside interrupts
 spi_buffer_t _spi_buffer_c, _spi_buffer_d, _spi_buffer_e, _spi_buffer_f;
 
+#define _SPI_HANDLE_INTERRUPT(spi_buffer) \
+        PORTC.OUTSET = 1; \
+        /* Just finished transmitting a byte, so increment buffer location */ \
+        spi_buffer.io_buffer_position++; \
+        /* we just read in some data, so we need to get it out of the input register */ \
+        if (spi_buffer.io_buffer_position < spi_buffer.rx_buffer_size) \
+                spi_buffer.rx_buffer[spi_buffer.io_buffer_position] = _SPI.DATA; \
+        \
+        /* If we still need to send or receive data, then start the data transfer */ \
+        if (spi_buffer.io_buffer_position < spi_buffer.tx_buffer_size) { \
+                /* If there is data still to be transmitted, then write it to the output buffer */ \
+                _SPI.DATA = spi_buffer.tx_buffer[spi_buffer.io_buffer_position]; \
+        } \
+        else if (spi_buffer.io_buffer_position < spi_buffer.rx_buffer_size) { \
+                /* If there is no data to be transmitted, but there is still data to be read, send zeros until all the data is in */ \
+                _SPI.DATA = 0; \
+        } \
+        else { \
+                /* we are done with the transmission, clean up */ \
+                spi_buffer.spi_port->transaction_underway = false; \
+                spi_buffer.spi_port = 0; \
+        } \
+        PORTC.OUTCLR = 1;\
+        reti(); \
+
+#ifdef SPI_USING_PORTC
+ISR(SPIC_INT_vect, ISR_NAKED) {
+        #define _SPI SPIC
+        _SPI_HANDLE_INTERRUPT(_spi_buffer_c);
+        #undef _SPI
+}
+#endif
+
+#ifdef SPI_USING_PORTD
+ISR(SPID_INT_vect,ISR_NAKED) {
+        #define _SPI SPIF
+        _SPI_HANDLE_INTERRUPT(_spi_buffer_d);
+        #undef _SPI
+}
+#endif
+
+#ifdef SPI_USING_PORTE
+ISR(SPIE_INT_vect,ISR_NAKED) {
+        #define _SPI SPIE
+        _SPI_HANDLE_INTERRUPT(_spi_buffer_e);
+        #undef _SPI
+}
+#endif
+
+#ifdef SPI_USING_PORTF
+ISR(SPIF_INT_vect,ISR_NAKED) {
+        #define _SPI SPIF
+        _SPI_HANDLE_INTERRUPT(_spi_buffer_f);
+        #undef _SPI
+}
+#endif
+
+
+
 /// Initilizes a hardware SPI port on the xMega
 /** This function sets up a spi_port_t struct and also initilizes the SPI
  *  hardware on the xMega. This function should always be used to generate the
