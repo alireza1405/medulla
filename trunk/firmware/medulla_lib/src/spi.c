@@ -1,61 +1,7 @@
 #include "spi.h"
 
-#define _SPI_HANDLE_INTERRUPT(spi_buffer) \
-	PORTC.OUTSET = 1; \
-	/* Just finished transmitting a byte, so increment buffer location */ \
-	spi_buffer.io_buffer_position++; \
-	/* we just read in some data, so we need to get it out of the input register */ \
-	if (spi_buffer.io_buffer_position < spi_buffer.rx_buffer_size) \
-		spi_buffer.rx_buffer[spi_buffer.io_buffer_position] = _SPI.DATA; \
-	\
-	/* If we still need to send or receive data, then start the data transfer */ \
-	if (spi_buffer.io_buffer_position < spi_buffer.tx_buffer_size) { \
-		/* If there is data still to be transmitted, then write it to the output buffer */ \
-		_SPI.DATA = spi_buffer.tx_buffer[spi_buffer.io_buffer_position]; \
-	} \
-	else if (spi_buffer.io_buffer_position < spi_buffer.rx_buffer_size) { \
-		/* If there is no data to be transmitted, but there is still data to be read, send zeros until all the data is in */ \
-	       	_SPI.DATA = 0; \
-	} \
-	else { \
-		/* we are done with the transmission, clean up */ \
-		spi_buffer.spi_port->transaction_underway = false; \
-		spi_buffer.spi_port = 0; \
-	} \
-	PORTC.OUTCLR = 1;\
-	reti(); \
-
-#ifdef SPI_USING_PORTC
-ISR(SPIC_INT_vect, ISR_NAKED) {
-	#define _SPI SPIC
-	_SPI_HANDLE_INTERRUPT(_spi_buffer_c);
-	#undef _SPI
-}
-#endif
-
-#ifdef SPI_USING_PORTD
-ISR(SPID_INT_vect,ISR_NAKED) {
-	#define _SPI SPIF
-	_SPI_HANDLE_INTERRUPT(_spi_buffer_d);
-	#undef _SPI
-}
-#endif
-
-#ifdef SPI_USING_PORTE
-ISR(SPIE_INT_vect,ISR_NAKED) {
-	#define _SPI SPIE
-	_SPI_HANDLE_INTERRUPT(_spi_buffer_e);
-	#undef _SPI
-}
-#endif
-
-#ifdef SPI_USING_PORTF
-ISR(SPIF_INT_vect,ISR_NAKED) {
-	#define _SPI SPIF
-	_SPI_HANDLE_INTERRUPT(_spi_buffer_f);
-	#undef _SPI
-}
-#endif
+/// Configures the buffers for a spi port
+static void _spi_configure_buffers(_spi_buffer_t *spi_buffer, uint8_t *tx_data, uint8_t tx_data_length, uint8_t *rx_data, uint8_t rx_data_length);
 
 spi_port_t spi_init_port(PORT_t *spi_port, SPI_t *spi_register, bool uses_chip_select) {
 	// Store values into the spi_port_t struct
@@ -77,17 +23,17 @@ spi_port_t spi_init_port(PORT_t *spi_port, SPI_t *spi_register, bool uses_chip_s
 	return port;
 }
 
-int spi_start_transmit(spi_port_t *spi_port, uint8_t *data, uint8_t data_length) {
+int spi_start_transmit(spi_port_t *spi_port, void *data, uint8_t data_length) {
 	// To start just a transmit, all we need to do is start a transmit_receive transaction with the rx_data_length set to zero.
 	return spi_start_transmit_receive(spi_port, data, data_length, 0, 0);
 }
 
-int spi_start_receive(spi_port_t *spi_port, uint8_t *data, uint8_t data_length) {
+int spi_start_receive(spi_port_t *spi_port, void *data, uint8_t data_length) {
 	// To start just a receive, we just need to start a transmit/receive transaction with a tx_data_length set to zero.
 	return spi_start_transmit_receive(spi_port, 0, 0, data, data_length);
 }
 
-int spi_start_transmit_receive(spi_port_t *spi_port, uint8_t *tx_data, uint8_t tx_data_length, uint8_t *rx_data, uint8_t rx_data_length) {
+int spi_start_transmit_receive(spi_port_t *spi_port, void *tx_data, uint8_t tx_data_length, void *rx_data, uint8_t rx_data_length) {
 	// If this spi_port already has a transfer underway, then returrn -1
 	if (spi_port->transaction_underway == true)
 		return -1;
@@ -101,7 +47,7 @@ int spi_start_transmit_receive(spi_port_t *spi_port, uint8_t *tx_data, uint8_t t
 			_spi_configure_buffers(&_spi_buffer_c, tx_data, tx_data_length, rx_data, rx_data_length);
 		}
 	}
-	if (spi_port->spi_register == &SPID) {
+	else if (spi_port->spi_register == &SPID) {
 		if (_spi_buffer_d.spi_port != 0)
 			return -2;
 		else {
@@ -109,7 +55,7 @@ int spi_start_transmit_receive(spi_port_t *spi_port, uint8_t *tx_data, uint8_t t
 			_spi_configure_buffers(&_spi_buffer_d, tx_data, tx_data_length, rx_data, rx_data_length);
 		}
 	}
-	if (spi_port->spi_register == &SPIE) {
+	else if (spi_port->spi_register == &SPIE) {
 		if (_spi_buffer_e.spi_port != 0)
 			return -2;
 		else {
@@ -117,7 +63,7 @@ int spi_start_transmit_receive(spi_port_t *spi_port, uint8_t *tx_data, uint8_t t
 			_spi_configure_buffers(&_spi_buffer_e, tx_data, tx_data_length, rx_data, rx_data_length);
 		}
 	}
-	if (spi_port->spi_register == &SPIF) {
+	else if (spi_port->spi_register == &SPIF) {
 		if (_spi_buffer_f.spi_port != 0)
 			return -2;
 		else { 
@@ -125,13 +71,17 @@ int spi_start_transmit_receive(spi_port_t *spi_port, uint8_t *tx_data, uint8_t t
 			_spi_configure_buffers(&_spi_buffer_f, tx_data, tx_data_length, rx_data, rx_data_length);
 		}
 	}
+	else
+		// Something weird happend because spi_register no longer points to an SPI register, just exit nicely
+		return -3;
 	
 
 	// Signal that a transaction is now in progress
 	spi_port->transaction_underway = true;
+	return 0;
 }
 
-void _spi_configure_buffers(spi_buffer_t *spi_buffer, uint8_t *tx_data, uint8_t tx_data_length, uint8_t *rx_data, uint8_t rx_data_length) {
+static void _spi_configure_buffers(_spi_buffer_t *spi_buffer, uint8_t *tx_data, uint8_t tx_data_length, uint8_t *rx_data, uint8_t rx_data_length) {
 
         // set output bufffer address and length
         spi_buffer->tx_buffer = tx_data;

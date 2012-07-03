@@ -1,9 +1,8 @@
 #include "uart.h"
 
 // Define internal functions and variables, so they cannot be used outside the library
-
 /// Internal function to get a pointer to the hardware buffer struct
-uart_buffer_t* _uart_get_hw_buffer(uart_port_t *port);
+static _uart_buffer_t* _uart_get_hw_buffer(uart_port_t *port);
 
 /// Internal function used by printf for sending characters
 static int _uart_stdio_put_char(char c, FILE *stream);
@@ -54,7 +53,7 @@ uart_port_t uart_init_port(PORT_t *port_reg, USART_t *uart_reg, uart_baud_t baud
 }
 
 int uart_connect_port(uart_port_t *port, bool use_for_stdio) {
-	uart_buffer_t *current_buffer = _uart_get_hw_buffer(port);
+	_uart_buffer_t *current_buffer = _uart_get_hw_buffer(port);
 
 	// check if the hardware is already being used, if it is, then return -1. If not then signal that we are using it now.
 	if (current_buffer->current_port != 0)
@@ -86,7 +85,7 @@ int uart_connect_port(uart_port_t *port, bool use_for_stdio) {
 }
 
 int uart_disconnect_port(uart_port_t *port) {
-	uart_buffer_t *current_buffer = _uart_get_hw_buffer(port);
+	_uart_buffer_t *current_buffer = _uart_get_hw_buffer(port);
 
 	// check if this port is actually connected
 	if (current_buffer->current_port == port) {
@@ -105,7 +104,7 @@ int uart_tx_data(uart_port_t *port, void *data, uint8_t data_length) {
 		// This is just silly, exit
 		return 0;
 
-	uart_buffer_t *current_buffer = _uart_get_hw_buffer(port);
+	_uart_buffer_t *current_buffer = _uart_get_hw_buffer(port);
 
 	bool not_currently_transmitting = (current_buffer->tx_buffer_end == current_buffer->tx_buffer_start);
 
@@ -136,7 +135,7 @@ inline int uart_tx_byte(uart_port_t *port, uint8_t data) {
 }
 
 int uart_rx_data(uart_port_t *port, void *data, uint8_t data_length) {
-	uart_buffer_t *current_buffer = _uart_get_hw_buffer(port);
+	_uart_buffer_t *current_buffer = _uart_get_hw_buffer(port);
 	int byte_cnt = 0;
 	for (byte_cnt = 0; byte_cnt < data_length; byte_cnt++) {
 		// check that there is actually more data to read
@@ -157,8 +156,8 @@ inline uint8_t uart_rx_byte(uart_port_t *port) {
 	return rx_data;
 }
 
-uart_buffer_t* _uart_get_hw_buffer(uart_port_t *port) {
-	uart_buffer_t *current_buffer;
+static _uart_buffer_t* _uart_get_hw_buffer(uart_port_t *port) {
+	_uart_buffer_t *current_buffer;
 	switch ((intptr_t)(port->uart_register)) {
 		case (intptr_t)(&USARTC0): current_buffer = &_uart_buffer_c0; break;
 		case (intptr_t)(&USARTC1): current_buffer = &_uart_buffer_c1; break;

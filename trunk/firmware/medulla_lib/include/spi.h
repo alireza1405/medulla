@@ -1,8 +1,10 @@
 #ifndef SPI_H
 #define SPI_H
 
-/// This library provides a SPI driver for the hardware SPI ports on the xMega.
-/** The SPI library is an interrupt driven interface for the SPI hardware on the
+/** @file 
+ *  @brief This library provides a SPI driver for the hardware SPI ports on the xMega.
+ * 
+ *  The SPI library is an interrupt driven interface for the SPI hardware on the
  *  xMega. The functions are non-blocking, so the user application can continue
  *  to run while SPI communications are running. Callbacks are provided on
  *  conpletion of transmit and receive.
@@ -43,10 +45,10 @@ typedef struct {
 	uint8_t rx_buffer_size;			/**< Length of rx buffer, length must be < 255 bytes */
 	uint8_t io_buffer_position;		/**< Current read/write position in the rx buffer */
 	spi_port_t *spi_port;
-} spi_buffer_t;
+} _spi_buffer_t;
 
 // Stores poitners to spi_port_t structs used inside interrupts
-spi_buffer_t _spi_buffer_c, _spi_buffer_d, _spi_buffer_e, _spi_buffer_f;
+_spi_buffer_t _spi_buffer_c, _spi_buffer_d, _spi_buffer_e, _spi_buffer_f;
 
 #define _SPI_HANDLE_INTERRUPT(spi_buffer) \
         PORTC.OUTSET = 1; \
@@ -107,38 +109,64 @@ ISR(SPIF_INT_vect,ISR_NAKED) {
 
 
 
-/// Initilizes a hardware SPI port on the xMega
-/** This function sets up a spi_port_t struct and also initilizes the SPI
+/** @brief Initilizes a hardware SPI port on the xMega
+ *
+ *  This function sets up a spi_port_t struct and also initilizes the SPI
  *  hardware on the xMega. This function should always be used to generate the
  *  spi_port_t structs. If it is not used, then the hardware may not be
  *  configured correctly.
+ *
+ *  @param spi_port Pointer to PORT_t register struct the SPI port is on
+ *  @param spi_register Pointer to the SPI_t register for the port
+ *  @param uses_chip_select True if the chip select pin should be used, false, if it shouldn't
+ *  @return spi_port_t for the newly configured SPI port
  */
 spi_port_t spi_init_port(PORT_t *spi_port, SPI_t *spi_register, bool  uses_chip_select);
 
-/// Starts transmitting data_length bytes starting at address of data
-/** This function starts a transmit trnsaction. If the spi_port is currently
- *  active, this function returns -1, if the SPI hardware is already active,
- *  then -2 is returned. If the transmit start was sucessful, 0 is returned. 
+/** @brief Start a transmit SPI transaction
+ *
+ *  This function starts transmitting data_length bytes of data starting at
+ *  *data.
+ *
+ *  @param spi_port Pointer to SPI port to transmit with
+ *  @param data Pointer to output data buffer
+ *  @param data_length Amount of data to transmit
+ *  @return  0 - Sucessful
+ *  @return -1 - SPI port is busy
+ *  @return -2 - SPI hardware is busy
  */
-int spi_start_transmit(spi_port_t *spi_port, uint8_t *data, uint8_t data_length);
+int spi_start_transmit(spi_port_t *spi_port, void *data, uint8_t data_length);
 
-/// Starts clocking in data_length bytes of data. The data is stored at *data.
-/** This function starts a receive trnsaction. If the spi_port is currently
- *  active, this function returns -1, if the SPI hardware is already active,
- *  then -2 is returned. If the receve start was sucessful, 0 is returned. 
+/** @brief Start a receive SPI transaction
+ *
+ *  This function starts clocking in data_length number bytes of data and stores
+ *  them at the data pointer.
+ *
+ *  @param spi_port Pointer to SPI port to transmit with
+ *  @param data Pointer to input data buffer
+ *  @param data_length Amount of data to clock in
+ *  @return  0 - Sucessful
+ *  @return -1 - SPI port is busy
+ *  @return -2 - SPI hardware is busy
  */
-int spi_start_receive(spi_port_t *spi_port, uint8_t *data, uint8_t data_length);
+int spi_start_receive(spi_port_t *spi_port, void *data, uint8_t data_length);
 
-/// Starts an SPI transmit/receive tramsactopm
-/** This functions starts clocking data out and in at the same time. The data is
- *  tramsmitted data should be stored starting at tx_data. The received data is
- *  stored at rx_data. If the spi_port is currently active, this function returns
- *  -1, if the SPI hardware is already active, then -2 is returned. If the
- *  transaction start was sucessful, 0 is returned. 
- */ 
-int spi_start_transmit_receive(spi_port_t *spi_port, uint8_t *tx_data, uint8_t tx_data_length, uint8_t *rx_data, uint8_t rx_data_length); 
-
-/// Configures the buffers for a spi port
-void _spi_configure_buffers(spi_buffer_t *spi_buffer, uint8_t *tx_data, uint8_t tx_data_length, uint8_t *rx_data, uint8_t rx_data_length);
+/** @brief Start a transmit/receive SPI transaction
+ *
+ *  This function starts trasnsmitting the data stored at tx_data and reading
+ *  data into rx_data. Enough clock pulses will be generated to either transmit
+ *  tx_data_length number of bytes or read in rx_data_length number of bytes,
+ *  whichever is larger.
+ *
+ *  @param spi_port Pointer to SPI port to transmit with
+ *  @param tx_data Pointer to output data buffer
+ *  @param tx_data_length Amount of data to transmit
+ *  @param rx_data Pointer to input data buffer
+ *  @param rx_data_length Amount of data to clock in
+ *  @return  0 - Sucessful
+ *  @return -1 - SPI port is busy
+ *  @return -2 - SPI hardware is busy
+ */
+int spi_start_transmit_receive(spi_port_t *spi_port, void *tx_data, uint8_t tx_data_length, void *rx_data, uint8_t rx_data_length); 
 
 #endif //SPI_H
