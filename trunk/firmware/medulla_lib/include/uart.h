@@ -87,17 +87,18 @@ typedef struct {
 	uint8_t rx_buffer_start;	/**< Beginning position of data in the receive buffer */
 	uint8_t rx_buffer_end;		/**< Ending position of data in the receive buffer */
 	uart_port_t *current_port;	/**< Pointer to the uart_port_t struct that is currently using this USART hardware */
+	bool currently_transmitting;	/**< True if the port is currently transmitting, set false when the buffer is emptied */
 } _uart_buffer_t;
 
 // _uart_buffer_t structs for each hardware USART port
-_uart_buffer_t _uart_buffer_c0,		/**< Struct for storing the buffer information for USARTC0 */
-               _uart_buffer_c1,         /**< Struct for storing the buffer information for USARTC1 */
-               _uart_buffer_d0,         /**< Struct for storing the buffer information for USARTD0 */
-               _uart_buffer_d1,         /**< Struct for storing the buffer information for USARTD1 */
-               _uart_buffer_e0,         /**< Struct for storing the buffer information for USARTE0 */
-               _uart_buffer_e1,         /**< Struct for storing the buffer information for USARTE1 */
-               _uart_buffer_f0,         /**< Struct for storing the buffer information for USARTF0 */
-               _uart_buffer_f1;         /**< Struct for storing the buffer information for USARTF1 */
+_uart_buffer_t _uart_buffer_c0,		/**< @brief Struct for storing the buffer information for USARTC0 */
+               _uart_buffer_c1,         /**< @brief Struct for storing the buffer information for USARTC1 */
+               _uart_buffer_d0,         /**< @brief Struct for storing the buffer information for USARTD0 */
+               _uart_buffer_d1,         /**< @brief Struct for storing the buffer information for USARTD1 */
+               _uart_buffer_e0,         /**< @brief Struct for storing the buffer information for USARTE0 */
+               _uart_buffer_e1,         /**< @brief Struct for storing the buffer information for USARTE1 */
+               _uart_buffer_f0,         /**< @brief Struct for storing the buffer information for USARTF0 */
+               _uart_buffer_f1;         /**< @brief Struct for storing the buffer information for USARTF1 */
 
 /** @brief Macro for handling the transmit complete interrupt
  *
@@ -111,9 +112,12 @@ _uart_buffer_t _uart_buffer_c0,		/**< Struct for storing the buffer information 
 #define _UART_TX_HANDLER(_UART_REG, _UART_BUFFER) \
 	if (_UART_BUFFER.tx_buffer_start != _UART_BUFFER.tx_buffer_end) { \
                 /* There is actually data to send, so increment the start position and send that byte. Make sure to handle wrap arounds*/ \
+		_UART_BUFFER.currently_transmitting = true; \
                 _UART_REG.DATA = _UART_BUFFER.tx_buffer[_UART_BUFFER.tx_buffer_start];      /* write the data into the output buffer */ \
                 _UART_BUFFER.tx_buffer_start = (_UART_BUFFER.tx_buffer_start+1)%_UART_BUFFER.tx_buffer_size; \
-        }
+        } \
+	else \
+		_UART_BUFFER.currently_transmitting = false; \
 
 /** @brief Macro for handling the receive complete interrupt
  *
