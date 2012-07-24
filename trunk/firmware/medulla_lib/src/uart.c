@@ -158,18 +158,37 @@ inline uint8_t uart_rx_byte(uart_port_t *port) {
 static _uart_buffer_t* _uart_get_hw_buffer(uart_port_t *port) {
 	_uart_buffer_t *current_buffer;
 	switch ((intptr_t)(port->uart_register)) {
-		case (intptr_t)(&USARTC0): current_buffer = &_uart_buffer_c0; break;
-		case (intptr_t)(&USARTC1): current_buffer = &_uart_buffer_c1; break;
-		case (intptr_t)(&USARTD0): current_buffer = &_uart_buffer_d0; break;
-		case (intptr_t)(&USARTD1): current_buffer = &_uart_buffer_d1; break;
-		case (intptr_t)(&USARTE0): current_buffer = &_uart_buffer_e0; break;
-		case (intptr_t)(&USARTE1): current_buffer = &_uart_buffer_e1; break;
-		case (intptr_t)(&USARTF0): current_buffer = &_uart_buffer_f0; break;
-		case (intptr_t)(&USARTF1): current_buffer = &_uart_buffer_f1; break;
+		case (intptr_t)(&USARTC0): current_buffer = &_uart_buffer_USARTC0; break;
+		case (intptr_t)(&USARTC1): current_buffer = &_uart_buffer_USARTC1; break;
+		case (intptr_t)(&USARTD0): current_buffer = &_uart_buffer_USARTD0; break;
+		case (intptr_t)(&USARTD1): current_buffer = &_uart_buffer_USARTD1; break;
+		case (intptr_t)(&USARTE0): current_buffer = &_uart_buffer_USARTE0; break;
+		case (intptr_t)(&USARTE1): current_buffer = &_uart_buffer_USARTE1; break;
+		case (intptr_t)(&USARTF0): current_buffer = &_uart_buffer_USARTF0; break;
+		case (intptr_t)(&USARTF1): current_buffer = &_uart_buffer_USARTF1; break;
 		default: current_buffer = 0;
 	}
 	
 	return current_buffer;
+}
+
+uint16_t uart_received_bytes(uart_port_t *port) {
+	_uart_buffer_t *buffer = _uart_get_hw_buffer(port);
+	
+	// Check if the buffer wraps around
+	if (buffer->rx_buffer_start <= buffer->rx_buffer_end) {
+		// Buffer doesn't wrap around
+		return buffer->rx_buffer_end - buffer->rx_buffer_start;
+	}
+	else {
+		// It does wrap around
+		return (buffer->rx_buffer_size - buffer->rx_buffer_start) + buffer->rx_buffer_end;
+	}
+}
+
+uint8_t uart_rx_peek(uart_port_t *port, uint16_t byte) {
+	_uart_buffer_t *buffer = _uart_get_hw_buffer(port);
+	return buffer->rx_buffer[(buffer->rx_buffer_start+byte)%buffer->rx_buffer_size];
 }
 
 static int _uart_stdio_put_char(char c, FILE *stream) {
