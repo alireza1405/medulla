@@ -14,7 +14,7 @@ static int _uart_stdio_get_char(FILE *stream);
 static FILE _uart_stdio_file = FDEV_SETUP_STREAM(_uart_stdio_put_char,_uart_stdio_get_char,_FDEV_SETUP_RW);
 uart_port_t *_uart_stdio_port;
 
-uart_port_t uart_init_port(PORT_t *port_reg, USART_t *uart_reg, uart_baud_t baud_rate, void *tx_buffer, uint8_t tx_buffer_length, void *rx_buffer, uint8_t rx_buffer_length) {
+uart_port_t uart_init_port(PORT_t *port_reg, USART_t *uart_reg, uart_baud_t baud_rate, void *tx_buffer, uint16_t tx_buffer_length, void *rx_buffer, uint16_t rx_buffer_length) {
 	uart_port_t port;
 	port.uart_port = port_reg;
 	port.uart_register = uart_reg;
@@ -99,14 +99,14 @@ int uart_disconnect_port(uart_port_t *port) {
 		return -1;
 }
 
-int uart_tx_data(uart_port_t *port, void *data, uint8_t data_length) {
+int uart_tx_data(uart_port_t *port, void *data, uint16_t data_length) {
 	if (data_length == 0)
 		// This is just silly, exit
 		return 0;
 
 	_uart_buffer_t *current_buffer = _uart_get_hw_buffer(port);
 
-	int byte_cnt = 0; // this is defined outside the loop so we can see how many bytes we actually wrote
+	uint16_t byte_cnt = 0; // this is defined outside the loop so we can see how many bytes we actually wrote
 	for (byte_cnt = 0; byte_cnt < data_length; byte_cnt++) {
 		// Check the buffer is full
 		if (current_buffer->tx_buffer_end == (current_buffer->tx_buffer_start-1))
@@ -133,9 +133,9 @@ inline int uart_tx_byte(uart_port_t *port, uint8_t data) {
 	return uart_tx_data(port,&data,1);
 }
 
-int uart_rx_data(uart_port_t *port, void *data, uint8_t data_length) {
+int uart_rx_data(uart_port_t *port, void *data, uint16_t data_length) {
 	_uart_buffer_t *current_buffer = _uart_get_hw_buffer(port);
-	int byte_cnt = 0;
+	int16_t byte_cnt = 0;
 	for (byte_cnt = 0; byte_cnt < data_length; byte_cnt++) {
 		// check that there is actually more data to read
 		if (current_buffer->rx_buffer_start == current_buffer->rx_buffer_end)
