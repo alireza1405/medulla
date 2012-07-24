@@ -24,10 +24,6 @@
  *  If this is not done, the interrupt service routines will not be compiled.
  *  This allows the users or other drivers to use the USART interrupts on ports
  *  that are not being used.
- *
- *  @par
- *  @note
- *  This driver only supports buffers up to 256 bytes long.
  */
 
 #include <avr/io.h>
@@ -61,13 +57,13 @@ typedef enum {
  *  this struct to know which port to use. 
  */
 typedef struct {
-	PORT_t *uart_port;		/**< Pointer to the PORT_t register struct the port is on */
-	USART_t *uart_register;		/**< Poiner to the USART_t register struct for the USART being used */
-	uart_baud_t baud_rate;		/**< The port's configured baud rate */
-	uint8_t *tx_buffer;		/**< Pointer to the transmit buffer */
-	uint8_t tx_buffer_size;		/**< Size of the transmit buffer */
-	uint8_t	*rx_buffer;		/**< Pointer to the receive buffer */
-	uint8_t rx_buffer_size;		/**< Size of the receive buffer */
+	PORT_t *uart_port;       /**< Pointer to the PORT_t register struct the port is on */
+	USART_t *uart_register;  /**< Poiner to the USART_t register struct for the USART being used */
+	uart_baud_t baud_rate;   /**< The port's configured baud rate */
+	uint8_t *tx_buffer;      /**< Pointer to the transmit buffer */
+	uint16_t tx_buffer_size; /**< Size of the transmit buffer */
+	uint8_t	*rx_buffer;      /**< Pointer to the receive buffer */
+	uint16_t rx_buffer_size; /**< Size of the receive buffer */
 } uart_port_t;
 
 /** @brief This struct defines buffer to be used by an ISR
@@ -78,27 +74,27 @@ typedef struct {
  *  without having to dereference a pointer to it.
  */
 typedef struct {
-	uint8_t *tx_buffer;		/**< Pointer to the transmit buffer */
-	uint8_t tx_buffer_size;		/**< Size of the transmit buffer */
-	uint8_t tx_buffer_start;	/**< Beginning position of data in the transmit buffer */
-	uint8_t tx_buffer_end;		/**< Ending position of data in the transmit buffer */
-	uint8_t *rx_buffer;		/**< Pointer to the receive buffer */
-	uint8_t rx_buffer_size;		/**< Size of the receive buffer */
-	uint8_t rx_buffer_start;	/**< Beginning position of data in the receive buffer */
-	uint8_t rx_buffer_end;		/**< Ending position of data in the receive buffer */
-	uart_port_t *current_port;	/**< Pointer to the uart_port_t struct that is currently using this USART hardware */
-	bool currently_transmitting;	/**< True if the port is currently transmitting, set false when the buffer is emptied */
+	uint8_t *tx_buffer;          /**< Pointer to the transmit buffer */
+	uint16_t tx_buffer_size;     /**< Size of the transmit buffer */
+	uint16_t tx_buffer_start;    /**< Beginning position of data in the transmit buffer */
+	uint16_t tx_buffer_end;	     /**< Ending position of data in the transmit buffer */
+	uint8_t *rx_buffer;          /**< Pointer to the receive buffer */
+	uint16_t rx_buffer_size;     /**< Size of the receive buffer */
+	uint16_t rx_buffer_start;    /**< Beginning position of data in the receive buffer */
+	uint16_t rx_buffer_end;	     /**< Ending position of data in the receive buffer */
+	uart_port_t *current_port;   /**< Pointer to the uart_port_t struct that is currently using this USART hardware */
+	bool currently_transmitting; /**< True if the port is currently transmitting, set false when the buffer is emptied */
 } _uart_buffer_t;
 
 // _uart_buffer_t structs for each hardware USART port
-_uart_buffer_t _uart_buffer_USARTC0,		/**< @brief Struct for storing the buffer information for USARTC0 */
-               _uart_buffer_USARTC1,		/**< @brief Struct for storing the buffer information for USARTC1 */
-               _uart_buffer_USARTD0,		/**< @brief Struct for storing the buffer information for USARTD0 */
-               _uart_buffer_USARTD1,		/**< @brief Struct for storing the buffer information for USARTD1 */
-               _uart_buffer_USARTE0,		/**< @brief Struct for storing the buffer information for USARTE0 */
-               _uart_buffer_USARTE1,		/**< @brief Struct for storing the buffer information for USARTE1 */
-               _uart_buffer_USARTF0,		/**< @brief Struct for storing the buffer information for USARTF0 */
-               _uart_buffer_USARTF1;		/**< @brief Struct for storing the buffer information for USARTF1 */
+_uart_buffer_t _uart_buffer_USARTC0, /**< @brief Struct for storing the buffer information for USARTC0 */
+               _uart_buffer_USARTC1, /**< @brief Struct for storing the buffer information for USARTC1 */
+               _uart_buffer_USARTD0, /**< @brief Struct for storing the buffer information for USARTD0 */
+               _uart_buffer_USARTD1, /**< @brief Struct for storing the buffer information for USARTD1 */
+               _uart_buffer_USARTE0, /**< @brief Struct for storing the buffer information for USARTE0 */
+               _uart_buffer_USARTE1, /**< @brief Struct for storing the buffer information for USARTE1 */
+               _uart_buffer_USARTF0, /**< @brief Struct for storing the buffer information for USARTF0 */
+               _uart_buffer_USARTF1; /**< @brief Struct for storing the buffer information for USARTF1 */
 
 /** @brief Macro to define the interrupt handler for a uart port.
  *
@@ -152,7 +148,7 @@ ISR(USART_PORT##_RXC_vect) { \
  *  @param rx_buffer_length Length of the receive buffer
  *  @return uart_port_t struct for the newly configured port
  */
-uart_port_t uart_init_port(PORT_t *port_reg, USART_t *uart_reg, uart_baud_t baud_rate, void *tx_buffer, uint8_t tx_buffer_length, void *rx_buffer, uint8_t rx_buffer_length);
+uart_port_t uart_init_port(PORT_t *port_reg, USART_t *uart_reg, uart_baud_t baud_rate, void *tx_buffer, uint16_t tx_buffer_length, void *rx_buffer, uint16_t rx_buffer_length);
 
 /** @brief Connects a UART port to the hardware interrupts.
  *  This function connects a uart_port_t struct's buffers to the USART
@@ -195,7 +191,7 @@ int uart_disconnect_port(uart_port_t *port);
  *  @param data_length Number of bytes to try to transmit
  *  @return Number of bytes copied into the output buffer
  */
-int uart_tx_data(uart_port_t *port, void *data, uint8_t data_length);
+int uart_tx_data(uart_port_t *port, void *data, uint16_t data_length);
 
 /** @brief Transmit a byte of data through a UART port.
  *
@@ -222,7 +218,7 @@ int uart_tx_byte(uart_port_t *port, uint8_t data);
  * @param data_length Number of bytes to try to read
  * @return Number of bytes actaully copied into data
  */
-int uart_rx_data(uart_port_t *port, void *data, uint8_t data_length);
+int uart_rx_data(uart_port_t *port, void *data, uint16_t data_length);
 
 /** @brief Read one byte from a UART port
  *
