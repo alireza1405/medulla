@@ -70,6 +70,7 @@ dzralte_message_t* dzralte_generate_message(dzralte_message_list_t *message_list
 }
 
 void dzralte_send_message(dzralte_message_list_t *message_list, dzralte_message_t *message, uint8_t sequence, uart_port_t *port, bool regenerate_data_CRC) {
+	static uint8_t transmit_buffer[10+_DZRALTE_MAXIMUM_MESSAGE_SIZE];
 	// Check if we were passed a pointer, if we weren't, then set the pointer to the correct message
 	if (message == 0)
 		message = &(message_list->message[sequence]);
@@ -81,12 +82,12 @@ void dzralte_send_message(dzralte_message_list_t *message_list, dzralte_message_
 			accumulator = (accumulator << 8) ^ _dzralte_crc_lookup_table[(accumulator >> 8) ^ message->data_buffer[byte]];
 		message->data_CRC = accumulator;
 	}
+	memcpy(transmit_buffer,message->command_header,8);
+	memcpy(transmit_buffer+8,message->data_buffer,message->data_length);
+	memcpy(transmit_buffer+8+message->data_length,&(message->data_CRC),2);
 
 	// Now put the message into the transmit buffer
-	uart_tx_data(port,message->command_header,8);
-	uart_tx_data(port,message->data_buffer,message->data_length);
-	uart_tx_byte(port,message->data_CRC>>8);
-	uart_tx_byte(port,message->data_CRC & 0xFF);
+	uart_tx_data(port,transmit_buffer,10+message->data_length);
 
 	// Set the waiting for response variable
 	message->waiting_for_response = true;

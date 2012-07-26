@@ -18,11 +18,13 @@
  */
 
 #include <stdbool.h>
+#include <string.h>
 #include "uart.h"
 
 #define _DZRALTE_SOF 0xA5
 #define _DZRALTE_EMPTY_RESPONCE 0x0
 #define _DZRALTE_READ_RESPONCE 0x2
+#define _DZRALTE_MAXIMUM_MESSAGE_SIZE 2
 
 typedef enum {
 	dzralte_read_cmd = 0x1,
