@@ -30,6 +30,7 @@
 #include <avr/interrupt.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 
 /** @brief Possibe baud rates for a port.
  *
