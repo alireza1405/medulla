@@ -67,5 +67,5 @@ inline void limit_sw_disable_port(limit_sw_port_t *limit_sw_port) {
 }
 
 inline uint8_t limit_sw_get_port(limit_sw_port_t *limit_sw_port) {
-	return ~(limit_sw_port->limit_sw_port->IN);
+	return limit_sw_port->limit_sw_port->IN & limit_sw_port->pin_mask;
 }
