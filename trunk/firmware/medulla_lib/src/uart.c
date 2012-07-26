@@ -106,17 +106,31 @@ int uart_tx_data(uart_port_t *port, void *data, uint16_t data_length) {
 
 	_uart_buffer_t *current_buffer = _uart_get_hw_buffer(port);
 
-	uint16_t byte_cnt = 0; // this is defined outside the loop so we can see how many bytes we actually wrote
-	for (byte_cnt = 0; byte_cnt < data_length; byte_cnt++) {
-		// Check the buffer is full
-		if (current_buffer->tx_buffer_end == (current_buffer->tx_buffer_start-1))
-			break; // get out of the loop
-		
-		// if the buffer is not full, then we can copy a byte into the buffer. To make C happy, we have to first cast the void pointer to a type
-		current_buffer->tx_buffer[current_buffer->tx_buffer_end] = ((uint8_t*)data)[byte_cnt];
-		// increment the buffer end pointer, wrapping around when neccesary
-		current_buffer->tx_buffer_end = ((current_buffer->tx_buffer_end+1)%current_buffer->tx_buffer_size);
+	// Get the amount of buffer left
+	uint16_t buffer_remaining;
+	if (current_buffer->tx_buffer_end < current_buffer->tx_buffer_start)
+		buffer_remaining = current_buffer->tx_buffer_start - current_buffer->tx_buffer_end - 1;
+	else
+		buffer_remaining = (current_buffer->tx_buffer_size + current_buffer->tx_buffer_start - current_buffer->tx_buffer_end) - 1;
+
+	// now assign buffer remaining to data_length if it's smaller
+	
+	data_length = (buffer_remaining < data_length) ? buffer_remaining : data_length;
+
+	// now copy the data into the buffer
+	if (current_buffer->tx_buffer_start < current_buffer->tx_buffer_end) { // The buffer has not wrapped around, so we have two cases
+		if ((current_buffer->tx_buffer_size - current_buffer->tx_buffer_end) >= data_length) // All the data will fit at the end of the buffer
+			memcpy(current_buffer->tx_buffer+current_buffer->tx_buffer_end,data,data_length);
+		else { // All the data won't fit at the end of the buffer, so we need to wrap the data around
+			memcpy(current_buffer->tx_buffer+current_buffer->tx_buffer_end,data,(current_buffer->tx_buffer_size - current_buffer->tx_buffer_end));
+			memcpy(current_buffer->tx_buffer,data+(current_buffer->tx_buffer_size - current_buffer->tx_buffer_end),data_length-(current_buffer->tx_buffer_size - current_buffer->tx_buffer_end));
+		}
 	}
+	else { // The buffer has wrapped around, so there is only one way data can be put in
+		memcpy(current_buffer->tx_buffer+current_buffer->tx_buffer_end,data,data_length);
+	}
+	
+	current_buffer->tx_buffer_end = (current_buffer->tx_buffer_end + data_length) % current_buffer->tx_buffer_size;
 
 	// If we were not in the middle of transmittind data, then we should start of the transmit by putting the first byte into the output buffer
 	if (current_buffer->currently_transmitting == false) {
@@ -126,7 +140,7 @@ int uart_tx_data(uart_port_t *port, void *data, uint16_t data_length) {
 	}
 
 	// Return the number of bytes that were actually put into the buffer
-	return byte_cnt;
+	return data_length;
 }
 
 inline int uart_tx_byte(uart_port_t *port, uint8_t data) {
