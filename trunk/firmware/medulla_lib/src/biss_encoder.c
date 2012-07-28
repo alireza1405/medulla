@@ -48,12 +48,12 @@ int biss_encoder_start_reading(biss_encoder_t *encoder) {
 	_BISS_ENCODER_SEND_CLOCK // Now send the second clock
 	
 	encoder->spi_port.spi_port->OUTCLR = (1<<7);                                                             
-        _delay_us(0.0625);
+	_delay_us(0.0625);
 	while ((encoder->spi_port.spi_port->IN & (1<<6)) == 0) {
 		encoder->spi_port.spi_port->OUTSET = (1<<7);
-	        _delay_us(0.125);
-	        encoder->spi_port.spi_port->OUTCLR = (1<<7);
-        	_delay_us(0.0625);
+		_delay_us(0.0125);
+		encoder->spi_port.spi_port->OUTCLR = (1<<7);
+		_delay_us(0.0125);
 	}
 	encoder->spi_port.spi_port->OUTSET = (1<<7);
         _delay_us(0.125);
