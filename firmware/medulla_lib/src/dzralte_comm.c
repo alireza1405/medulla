@@ -84,7 +84,8 @@ void dzralte_send_message(dzralte_message_list_t *message_list, dzralte_message_
 	}
 	memcpy(transmit_buffer,message->command_header,8);
 	memcpy(transmit_buffer+8,message->data_buffer,message->data_length);
-	memcpy(transmit_buffer+8+message->data_length,&(message->data_CRC),2);
+	transmit_buffer[8+message->data_length] = message->data_CRC >>8;
+	transmit_buffer[9+message->data_length] = message->data_CRC & 0xFF;
 
 	// Now put the message into the transmit buffer
 	uart_tx_data(port,transmit_buffer,10+message->data_length);
