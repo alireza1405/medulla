@@ -42,6 +42,16 @@ typedef struct {
 	bool transaction_underway;		/**< If there is currently an ongoing transaction */
 } spi_port_t;
 
+typedef enum {
+	spi_div2 = SPI_PRESCALER_DIV4_gc | SPI_CLK2X_bm,
+	spi_div4 = SPI_PRESCALER_DIV4_gc,
+	spi_div8 = SPI_PRESCALER_DIV4_gc | SPI_CLK2X_bm,
+	spi_div16 = SPI_PRESCALER_DIV16_gc,
+	spi_div32 = SPI_PRESCALER_DIV64_gc | SPI_CLK2X_bm,
+	spi_div64 = SPI_PRESCALER_DIV64_gc,
+	spi_div128 = SPI_PRESCALER_DIV128_gc
+} spi_clock_prescaler_t;
+
 /** @brief Stores pointers and sizes of an SPI port's tx and rx buffers
  *
  *  When a SPI transaction is started, the information about the data buffers
@@ -79,11 +89,8 @@ ISR(SPI_PORT##_INT_vect) {\
 	if (_spi_buffer_##SPI_PORT.io_buffer_position < _spi_buffer_##SPI_PORT.rx_buffer_size) \
 		_spi_buffer_##SPI_PORT.rx_buffer[_spi_buffer_##SPI_PORT.io_buffer_position] = SPI_PORT.DATA; \
 	\
-	/* Just finished transmitting or receiving a byte, so increment buffer location */ \
-	_spi_buffer_##SPI_PORT.io_buffer_position++; \
-	\
 	/* If we still need to send or receive data, then start the data transfer */ \
-	if (_spi_buffer_##SPI_PORT.io_buffer_position < _spi_buffer_##SPI_PORT.tx_buffer_size) { \
+	if (++_spi_buffer_##SPI_PORT.io_buffer_position < _spi_buffer_##SPI_PORT.tx_buffer_size) { \
 		/* If there is data still to be transmitted, then write it to the output buffer */ \
 		SPI_PORT.DATA = _spi_buffer_##SPI_PORT.tx_buffer[_spi_buffer_##SPI_PORT.io_buffer_position]; \
 	} \
@@ -98,7 +105,6 @@ ISR(SPI_PORT##_INT_vect) {\
 	} \
 }\
 
-
 /** @brief Initilizes a hardware SPI port on the xMega
  *
  *  This function sets up a spi_port_t struct and also initilizes the SPI
@@ -111,7 +117,7 @@ ISR(SPI_PORT##_INT_vect) {\
  *  @param uses_chip_select True if the chip select pin should be used, false, if it shouldn't
  *  @return spi_port_t for the newly configured SPI port
  */
-spi_port_t spi_init_port(PORT_t *spi_port, SPI_t *spi_register, bool  uses_chip_select);
+spi_port_t spi_init_port(PORT_t *spi_port, SPI_t *spi_register, spi_clock_prescaler_t prescaler, bool  uses_chip_select);
 
 /** @brief Start a transmit SPI transaction
  *

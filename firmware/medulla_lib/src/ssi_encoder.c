@@ -11,7 +11,7 @@ ssi_encoder_t ssi_encoder_init(PORT_t *spi_port, SPI_t *spi_register, void *time
 	ssi_encoder_t encoder;
 
 	// setup the encoder struct
-	encoder.spi_port = spi_init_port(spi_port, spi_register, false);
+	encoder.spi_port = spi_init_port(spi_port, spi_register, spi_div16, false);
 	encoder.timestamp_timer = (TC0_t*)timestamp_timer;
 	encoder.data_pointer = data_pointer;
 	encoder.data_length = data_length;
