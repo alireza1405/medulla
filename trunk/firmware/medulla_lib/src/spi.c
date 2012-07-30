@@ -9,7 +9,7 @@
 /// Configures the buffers for a spi port
 static void _spi_configure_buffers(volatile _spi_buffer_t *spi_buffer, uint8_t *tx_data, uint8_t tx_data_length, uint8_t *rx_data, uint8_t rx_data_length);
 
-spi_port_t spi_init_port(PORT_t *spi_port, SPI_t *spi_register, bool uses_chip_select) {
+spi_port_t spi_init_port(PORT_t *spi_port, SPI_t *spi_register, spi_clock_prescaler_t prescaler, bool uses_chip_select) {
 	// Store values into the spi_port_t struct
 	spi_port_t port;
 	port.spi_port = spi_port;
@@ -28,7 +28,7 @@ spi_port_t spi_init_port(PORT_t *spi_port, SPI_t *spi_register, bool uses_chip_s
 	port.transaction_underway = false;
 
 	// Configure the SPI registers
-	port.spi_register->CTRL = SPI_ENABLE_bm | SPI_MASTER_bm | SPI_MODE_0_gc | SPI_PRESCALER_DIV16_gc;
+	port.spi_register->CTRL = SPI_ENABLE_bm | SPI_MASTER_bm | SPI_MODE_0_gc | prescaler;
 	port.spi_register->INTCTRL = SPI_INTLVL_MED_gc;
 	
 	return port;

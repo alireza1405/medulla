@@ -14,9 +14,10 @@
 #include "adc.h"
 
 UART_USES_PORT(USARTE0)
-UART_USES_PORT(USARTC0)
+UART_USES_PORT(USARTD0)
 ADC_USES_PORT(ADCB)
 ADC_USES_PORT(ADCA)
+SPI_USES_PORT(SPIC)
 //ECAT_USES_PORT(SPIE)
 //LIMIT_SW_USES_PORT(PORTK)
 //LIMIT_SW_USES_COUNTER(TCC0)
@@ -50,13 +51,28 @@ int main(void) {
 
 	uint8_t outbuffer[128];
 	uint8_t inbuffer[128];
+	uint8_t outamp[128];
+	uint8_t inamp[128];
 	uart_port_t debug_port = uart_init_port(&PORTE, &USARTE0, uart_baud_115200, outbuffer, 128, inbuffer, 128);
-	uart_connect_port(&debug_port, true);
-	printf("Starting...\n");
+	uart_connect_port(&debug_port, false);
+//	printf("Starting...\n");
 /*
-	uart_port_t amp_port = uart_init_port(&PORTC, &USARTC0, uart_baud_115200, outbuffer, 128, inbuffer, 128);
-	uart_connect_port(&amp_port, true);
+	uart_port_t amp_port = uart_init_port(&PORTD, &USARTD0, uart_baud_115200, outamp, 128, inamp, 128);
+	uart_connect_port(&amp_port, false);
+	int bytes;
+	uint8_t data;
+	while (1) {
+		bytes = uart_rx_data(&debug_port,&data,1);
+		if (bytes == 1)
+			uart_tx_byte(&amp_port,data);
+		bytes = 0;
+		bytes = uart_rx_data(&amp_port,&data,1);
+		if (bytes == 1)
+			uart_tx_byte(&debug_port,data);
 
+	}
+*/
+/*
 	uint16_t write_command = 0xF;
 	dzralte_generate_message(&message_list, 63,0,dzralte_write_cmd, 0x07,0x00,&write_command,2);
 	dzralte_send_message(&message_list,0,0,&amp_port,false);
@@ -131,6 +147,7 @@ int main(void) {
 		_delay_ms(100);
 	}
 */
+/*
 	PORTC.DIRSET = 0b11;
 	uint16_t adc0,adc1,adc2,adc3,adc4,adc5,adc6,adc7;
 	uint16_t adca1,adca2,adca3,adca4,adca5,adca6,adca7;
@@ -164,6 +181,15 @@ int main(void) {
 		printf("%04u %04u %04u %04u %04u %04u %04u\n",adca1,adca2,adca3,adca4,adca5,adca6,adca7); 
 		_delay_ms(100);
 	} 
+*/
+	PORTC.DIRSET = 1;
+	spi_port_t spi = spi_init_port(&PORTC,&SPIC,spi_div2,false);
+	uint8_t txbuf[4] = {0xAA,0xAA,0xAA,0xAA};
+	uint8_t rxbuf[4];
+	while (1) {
+		spi_start_transmit_receive(&spi,txbuf,40,rxbuf,4);
+		_delay_ms(10);
+	}
 
 	while(1);
 	return 1;

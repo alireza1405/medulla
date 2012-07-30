@@ -4,7 +4,7 @@ ecat_slave_t ecat_init_slave(PORT_t *spi_port, SPI_t *spi_register, io_pin_t eep
 	ecat_slave_t slave;
 	
 	// Initilize the SPI port
-	slave.spi_port = spi_init_port(spi_port, spi_register, true);
+	slave.spi_port = spi_init_port(spi_port, spi_register, spi_div4, true);
 
 	// Initilize IO pins
 	io_set_direction(eeprom_pin, io_input);

@@ -11,7 +11,8 @@ biss_encoder_t biss_encoder_init(PORT_t *spi_port, SPI_t *spi_register, void *ti
 	biss_encoder_t encoder;
 
 	// setup the encoder struct
-	encoder.spi_port = spi_init_port(spi_port, spi_register, false);
+	encoder.spi_port = spi_init_port(spi_port, spi_register, spi_div16, false);
+//	encoder.spi_port.spi_register->CTRL = SPI_ENABLE_bm | SPI_MASTER_bm | SPI_MODE_0_gc | SPI_PRESCALER_DIV16_gc;
 	encoder.timestamp_timer = (TC0_t*)timestamp_timer;
 	encoder.cnt_per_us = cnt_per_us;
 	encoder.data_pointer = data_pointer;
