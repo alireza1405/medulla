@@ -39,7 +39,7 @@ typedef struct {
 	PORT_t *spi_port; 			/**< IO port containing the SPI pins */
 	SPI_t *spi_register;			/**< SPI register address */
 	bool uses_chip_select;			/**< This bool specifies if the chip select should be used */
-	bool transaction_underway;		/**< If there is currently an ongoing transaction */
+	volatile bool transaction_underway;		/**< If there is currently an ongoing transaction */
 } spi_port_t;
 
 typedef enum {

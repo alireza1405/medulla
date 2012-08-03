@@ -8,21 +8,23 @@
 #include "pwm.h"
 #include "limit_switch.h"
 #include "estop.h"
-#include "ssi_encoder.h"
+//#include "ssi_encoder.h"
 #include "quadrature_encoder.h"
 #include "dzralte_comm.h"
 #include "adc.h"
+#include "usart_adc.h"
 
 UART_USES_PORT(USARTE0)
 UART_USES_PORT(USARTD0)
 ADC_USES_PORT(ADCB)
 ADC_USES_PORT(ADCA)
-SPI_USES_PORT(SPIC)
+//SPI_USES_PORT(SPIC)
+USART_ADC_USES_PORT(USARTF0)
 //ECAT_USES_PORT(SPIE)
 //LIMIT_SW_USES_PORT(PORTK)
 //LIMIT_SW_USES_COUNTER(TCC0)
-//ESTOP_USES_PORT(PORTJ)
-//ESTOP_USES_COUNTER(TCC0)
+ESTOP_USES_PORT(PORTJ)
+ESTOP_USES_COUNTER(TCC0)
 //SSI_ENCODER_USES_PORT(SPIC)
 
 uint8_t *command;
@@ -34,7 +36,7 @@ uint8_t status;
 dzralte_message_list_t message_list;
 
 void handle_estop() {
-	PORTA.OUTTGL = 1<<7;
+	PORTC.OUTTGL = 1;
 }
 
 int main(void) {
@@ -43,7 +45,7 @@ int main(void) {
 	cpu_configure_interrupt_level(cpu_interrupt_level_high, true);
 	cpu_configure_interrupt_level(cpu_interrupt_level_low, true);
 	sei();
-	PORTA.DIRSET = 1<<7;
+	PORTC.DIRSET = 1;
 	//PORTC.DIRSET = 0b1111;
 //	PORTC.OUTSET = 0b100;
 	//if (limit_sw_enable_port(&limitSW) == 0)
@@ -54,8 +56,20 @@ int main(void) {
 	uint8_t outamp[128];
 	uint8_t inamp[128];
 	uart_port_t debug_port = uart_init_port(&PORTE, &USARTE0, uart_baud_115200, outbuffer, 128, inbuffer, 128);
-	uart_connect_port(&debug_port, false);
-//	printf("Starting...\n");
+	uart_connect_port(&debug_port, true);
+	printf("Starting...\n");
+
+	estop_port_t estop = estop_init_port(io_init_pin(&PORTJ,6),io_init_pin(&PORTJ,7),&TCC0,handle_estop);
+	estop_enable_port(&estop);
+	estop_deassert_port(&estop);
+
+	while (1) {
+		estop_assert_port(&estop);
+		_delay_ms(10);
+		estop_deassert_port(&estop);
+		_delay_ms(10);
+	}
+
 /*
 	uart_port_t amp_port = uart_init_port(&PORTD, &USARTD0, uart_baud_115200, outamp, 128, inamp, 128);
 	uart_connect_port(&amp_port, false);
@@ -182,6 +196,7 @@ int main(void) {
 		_delay_ms(100);
 	} 
 */
+/*
 	PORTC.DIRSET = 1;
 	spi_port_t spi = spi_init_port(&PORTC,&SPIC,spi_div2,false);
 	uint8_t txbuf[4] = {0xAA,0xAA,0xAA,0xAA};
@@ -190,7 +205,34 @@ int main(void) {
 		spi_start_transmit_receive(&spi,txbuf,40,rxbuf,4);
 		_delay_ms(10);
 	}
+*/
+/*
+	PORTC.DIRSET = 1;
+	uint16_t adc0, adc1, adc2, adc3;
 
+	usart_adc_t usart_adc = usart_adc_init(&PORTF,&USARTF0, &adc0, &adc1, &adc2, &adc3);
+	while (1) {	
+		usart_adc_start_read(&usart_adc);
+	//	while (usart_adc_read_complete(&usart_adc));
+		usart_adc_process_data(&usart_adc);
+//		printf("%u, %u, %u, %u\n",adc0,adc1,adc2,adc3);
+		_delay_ms(100);
+	}
+*/
+/*
+	uint32_t enc_val;
+	uint16_t timer_val;
+	PORTC.DIRSET = 1;
+	PORTC.OUTSET = 1;
+	ssi_encoder_t encoder = ssi_encoder_init(&PORTC,&SPIC,&TCC0,&enc_val,17,&timer_val);
+	while (1) {
+		ssi_encoder_start_reading(&encoder);
+		while (!ssi_encoder_read_complete(&encoder));
+		ssi_encoder_process_data(&encoder);
+		printf("%8lu\n",enc_val);
+		_delay_ms(100);
+	}
+*/
 	while(1);
 	return 1;
 }
