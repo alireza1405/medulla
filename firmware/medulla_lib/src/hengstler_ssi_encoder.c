@@ -1,4 +1,4 @@
-#include "ssi_encoder.h"
+#include "hengstler_ssi_encoder.h"
 
 #define _SSI_ENCODER_SEND_CLOCK \
 encoder->spi_port.spi_port->OUTCLR = (1<<7); \
@@ -11,7 +11,7 @@ ssi_encoder_t ssi_encoder_init(PORT_t *spi_port, SPI_t *spi_register, void *time
 	ssi_encoder_t encoder;
 
 	// setup the encoder struct
-	encoder.spi_port = spi_init_port(spi_port, spi_register, spi_div16, false);
+	encoder.spi_port = spi_init_port(spi_port, spi_register, spi_div32, false);
 	encoder.timestamp_timer = (TC0_t*)timestamp_timer;
 	encoder.data_pointer = data_pointer;
 	encoder.data_length = data_length;
@@ -23,6 +23,9 @@ ssi_encoder_t ssi_encoder_init(PORT_t *spi_port, SPI_t *spi_register, void *time
 
 	// The spi driver defaults to the wrong SPI mode, so we switch it now
 	spi_register->CTRL = (spi_register->CTRL & ~SPI_MODE_gm) | SPI_MODE_2_gc;
+
+	spi_port->DIRSET = 1<<7;
+	spi_port->OUTSET = 1<<7;
 
 	// Then just return the encoder
 	return encoder;
@@ -55,22 +58,26 @@ int ssi_encoder_start_reading(ssi_encoder_t *encoder) {
 	// First record the start time, and then send start bit
 	cli();
 	*(encoder->timestamp_pointer) = encoder->timestamp_timer->CNT;
-	_SSI_ENCODER_SEND_CLOCK
+	encoder->spi_port.spi_port->OUTCLR = 1<<7;
 	sei();
+	_delay_us(2);
+	encoder->spi_port.spi_port->OUTSET = 1<<7;
 	
-	encoder->spi_port.spi_port->OUTCLR = (1<<7); 
-        _delay_us(0.0625);
 	while (extra_bits != 0) {
 		encoder->spi_port.spi_port->OUTCLR = (1<<7);
+        _delay_us(0.0625);
 		// sample the bit
-		encoder->input_buffer[3-data_bytes] |= (encoder->spi_port.spi_port->IN & (1<<6)) >> (7-extra_bits--);
+		cli();
 		encoder->spi_port.spi_port->OUTSET = (1<<7);
-	        _delay_us(0.0625);
+		encoder->input_buffer[3-data_bytes] |= (encoder->spi_port.spi_port->IN & (1<<6)) >> (7-extra_bits--);
+		sei();
+		_delay_us(0.0625);
 	}
-
 	encoder->spi_port.spi_register->CTRL |= SPI_ENABLE_bm;
 	spi_start_receive(&(encoder->spi_port), encoder->input_buffer + 4 - (encoder->data_length/8),encoder->data_length/8);
-
+	while (encoder->spi_port.transaction_underway);
+	encoder->spi_port.spi_register->CTRL &= ~SPI_ENABLE_bm;
+	_SSI_ENCODER_SEND_CLOCK
 	// At this point the clock generator will run. When an Ack is received by the pin interrupt the ISR will start the SPI transfer
 	return 0;
 }

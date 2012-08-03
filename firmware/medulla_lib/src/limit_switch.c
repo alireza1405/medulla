@@ -24,7 +24,6 @@ limit_sw_port_t limit_sw_init_port(PORT_t *limit_sw_port, uint8_t pin_mask, void
 }
 
 inline int limit_sw_enable_port(limit_sw_port_t *limit_sw_port) {
-	PORTC.OUTSET = 0b10;
 	if (limit_sw_port->limit_sw_port->INTCTRL & PORT_INT0LVL_gm)
 		return -1; // the interrupt is already in use
 
