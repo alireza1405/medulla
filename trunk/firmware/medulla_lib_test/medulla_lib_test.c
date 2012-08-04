@@ -8,7 +8,7 @@
 #include "pwm.h"
 #include "limit_switch.h"
 #include "estop.h"
-//#include "ssi_encoder.h"
+#include "renishaw_ssi_encoder.h"
 #include "quadrature_encoder.h"
 #include "dzralte_comm.h"
 #include "adc.h"
@@ -25,7 +25,7 @@ USART_ADC_USES_PORT(USARTF0)
 //LIMIT_SW_USES_COUNTER(TCC0)
 ESTOP_USES_PORT(PORTJ)
 ESTOP_USES_COUNTER(TCC0)
-//SSI_ENCODER_USES_PORT(SPIC)
+SSI_ENCODER_USES_PORT(SPIC)
 
 uint8_t *command;
 uint16_t *motor_current;
@@ -58,17 +58,6 @@ int main(void) {
 	uart_port_t debug_port = uart_init_port(&PORTE, &USARTE0, uart_baud_115200, outbuffer, 128, inbuffer, 128);
 	uart_connect_port(&debug_port, true);
 	printf("Starting...\n");
-
-	estop_port_t estop = estop_init_port(io_init_pin(&PORTJ,6),io_init_pin(&PORTJ,7),&TCC0,handle_estop);
-	estop_enable_port(&estop);
-	estop_deassert_port(&estop);
-
-	while (1) {
-		estop_assert_port(&estop);
-		_delay_ms(10);
-		estop_deassert_port(&estop);
-		_delay_ms(10);
-	}
 
 /*
 	uart_port_t amp_port = uart_init_port(&PORTD, &USARTD0, uart_baud_115200, outamp, 128, inamp, 128);
@@ -219,20 +208,20 @@ int main(void) {
 		_delay_ms(100);
 	}
 */
-/*
+
 	uint32_t enc_val;
 	uint16_t timer_val;
 	PORTC.DIRSET = 1;
 	PORTC.OUTSET = 1;
-	ssi_encoder_t encoder = ssi_encoder_init(&PORTC,&SPIC,&TCC0,&enc_val,17,&timer_val);
+	renishaw_ssi_encoder_t encoder = renishaw_ssi_encoder_init(&PORTC,&SPIC,&TCC0,&enc_val,&timer_val);
 	while (1) {
-		ssi_encoder_start_reading(&encoder);
-		while (!ssi_encoder_read_complete(&encoder));
-		ssi_encoder_process_data(&encoder);
+		renishaw_ssi_encoder_start_reading(&encoder);
+		while (!renishaw_ssi_encoder_read_complete(&encoder));
+		renishaw_ssi_encoder_process_data(&encoder);
 		printf("%8lu\n",enc_val);
 		_delay_ms(100);
 	}
-*/
+
 	while(1);
 	return 1;
 }

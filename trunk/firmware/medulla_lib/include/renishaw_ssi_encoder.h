@@ -1,13 +1,12 @@
-#ifndef SSI_ENCODER_H
-#define SSI_ENCODER_H
+#ifndef RENISHAW_SSI_ENCODER_H
+#define RENISHAW_SSI_ENCODER_H
 
 /** @file
- *  @brief This driver implements communication between the xMega and an ssi encoder.
+ *  @brief This driver implements communication between the xMega and a renishaw ssi encoder.
  *
  *  This driver handles all the interface and data management reuqired for using
- *  a SSI encoder. To follow the Biss-C spec the driver must continually
- *  clock the CLK pin for an arbitrary amount of time until the encoder finishes
- *  it's measurement and sends an Ack signal.
+ *  a Renishaw SSI encoder. This driver will not neccesarily work with any other
+ *  type of SSI encoder. 
  *
  *  This driver can also generate a timestamp for the exact time when the
  *  encoder position was sampled. A pointer to a timer counter must be passed
@@ -25,10 +24,9 @@ typedef struct {
 	spi_port_t spi_port; /**< SPI port used to communicate with the encoder */
 	TC0_t *timestamp_timer; /**< Timer register to read the timestamp from */
 	uint32_t *data_pointer; /**< Pointer to where the data is being stored */
-	uint8_t data_length; /**< Stores the number of bits to read from the encoder*/
 	uint16_t *timestamp_pointer; /**< Pointer to where the timestamp is to be stored */
-	uint8_t input_buffer[4]; /**< An array of 5 bytes where the data is clocked into */
-} ssi_encoder_t;
+	uint8_t input_buffer[2]; /**< An array of 5 bytes where the data is clocked into */
+} renishaw_ssi_encoder_t;
 
 /** @brief Alias the SPI interrupt macro
  *
@@ -57,11 +55,10 @@ typedef struct {
  *  @param timestamp_timer Pointer to the register of the timer used to generate
  *  the timestamps.
  *  @param data_pointer Pointer to a location to store the encoder posision.
- *  @param data_length Number of bits of data to read from encoder
  *  @param timestamp_pointer Pointer to the location to write the timestamp.
  *  @return Retuns the newly configured biss_encoder_t struct
  */
-ssi_encoder_t ssi_encoder_init(PORT_t *spi_port, SPI_t *spi_register, void *timestamp_timer, uint32_t *data_pointer, uint8_t data_length, uint16_t *timestamp_pointer);
+renishaw_ssi_encoder_t renishaw_ssi_encoder_init(PORT_t *spi_port, SPI_t *spi_register, void *timestamp_timer, uint32_t *data_pointer, uint16_t *timestamp_pointer);
 
 /** @brief Starts an encoder read cycle
  *
@@ -74,7 +71,7 @@ ssi_encoder_t ssi_encoder_init(PORT_t *spi_port, SPI_t *spi_register, void *time
  *  @return -1 - Read is already underway, new read has not been started.
  *  @return -2 - The encoder is reporting that it is not ready to be read.
  */
-int ssi_encoder_start_reading(ssi_encoder_t *encoder);
+int renishaw_ssi_encoder_start_reading(renishaw_ssi_encoder_t *encoder);
 
 /** @brief Processes the data received from the encoder
  *
@@ -85,7 +82,7 @@ int ssi_encoder_start_reading(ssi_encoder_t *encoder);
  *
  *  @param encoder Pointer to the ssi encoder struct for the encoder to read
  */
-void ssi_encoder_process_data(ssi_encoder_t *encoder);
+void renishaw_ssi_encoder_process_data(renishaw_ssi_encoder_t *encoder);
 
 /** @brief Checks if an encoder read is in progress
  *
@@ -95,6 +92,6 @@ void ssi_encoder_process_data(ssi_encoder_t *encoder);
  *  @return true - The read has completed and the interface is idle.
  *  @return false - The encoder posision is currently being read.
  */
-bool ssi_encoder_read_complete(ssi_encoder_t *encoder);
+bool renishaw_ssi_encoder_read_complete(renishaw_ssi_encoder_t *encoder);
 
-#endif //SSI_H
+#endif //RENISHAW_SSI_ENCODER_H
