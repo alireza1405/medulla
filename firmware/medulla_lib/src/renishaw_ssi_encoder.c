@@ -1,4 +1,4 @@
-#include "hengstler_ssi_encoder.h"
+#include "renishaw_ssi_encoder.h"
 
 #define _SSI_ENCODER_SEND_CLOCK \
 encoder->spi_port.spi_port->OUTCLR = (1<<7); \
@@ -6,23 +6,20 @@ _delay_us(0.125);        /* Half of the 2 Mhz period*/ \
 encoder->spi_port.spi_port->OUTSET = (1<<7); \
 _delay_us(0.125);        /* Other half of the 2 Mhz period*/
 
-ssi_encoder_t ssi_encoder_init(PORT_t *spi_port, SPI_t *spi_register, void *timestamp_timer, uint32_t *data_pointer, uint8_t data_length, uint16_t *timestamp_pointer) {
+renishaw_ssi_encoder_t renishaw_ssi_encoder_init(PORT_t *spi_port, SPI_t *spi_register, void *timestamp_timer, uint32_t *data_pointer, uint16_t *timestamp_pointer) {
 
-	ssi_encoder_t encoder;
+	renishaw_ssi_encoder_t encoder;
 
 	// setup the encoder struct
 	encoder.spi_port = spi_init_port(spi_port, spi_register, spi_div32, false);
 	encoder.timestamp_timer = (TC0_t*)timestamp_timer;
 	encoder.data_pointer = data_pointer;
-	encoder.data_length = data_length;
 	encoder.timestamp_pointer = timestamp_pointer;
 	encoder.input_buffer[0] = 0;
 	encoder.input_buffer[1] = 0;
-	encoder.input_buffer[2] = 0;
-	encoder.input_buffer[3] = 0;
 
 	// The spi driver defaults to the wrong SPI mode, so we switch it now
-	spi_register->CTRL = (spi_register->CTRL & ~SPI_MODE_gm) | SPI_MODE_2_gc;
+	spi_register->CTRL = (spi_register->CTRL & ~SPI_MODE_gm) | SPI_MODE_1_gc;
 
 	spi_port->DIRSET = 1<<7;
 	spi_port->OUTSET = 1<<7;
@@ -31,24 +28,18 @@ ssi_encoder_t ssi_encoder_init(PORT_t *spi_port, SPI_t *spi_register, void *time
 	return encoder;
 }
 
-int ssi_encoder_start_reading(ssi_encoder_t *encoder) {
+int renishaw_ssi_encoder_start_reading(renishaw_ssi_encoder_t *encoder) {
 	// first check that we are not already reading
-	if (ssi_encoder_read_complete(encoder) == false)
+	if (renishaw_ssi_encoder_read_complete(encoder) == false)
 		return -1;
 
 	// Check that the encoder is ready to be read from. MISO has be high
 	if ((encoder->spi_port.spi_port->IN & (1<<6)) == 0)
 		return -2;
 
-	//We need to figure out how many extra bits we need to clock in at the beginning
-	uint8_t extra_bits = encoder->data_length % 8;
-	uint8_t data_bytes = encoder->data_length / 8;
-
 	// clear out the data buffer
 	encoder->input_buffer[0] = 0;
 	encoder->input_buffer[1] = 0;
-	encoder->input_buffer[2] = 0;
-	encoder->input_buffer[3] = 0;
 
 
 	// Now we need to manually send out the first part of the BISS packet
@@ -58,40 +49,33 @@ int ssi_encoder_start_reading(ssi_encoder_t *encoder) {
 	// First record the start time, and then send start bit
 	cli();
 	*(encoder->timestamp_pointer) = encoder->timestamp_timer->CNT;
-	encoder->spi_port.spi_port->OUTCLR = 1<<7;
+	_SSI_ENCODER_SEND_CLOCK
 	sei();
-	_delay_us(2);
-	encoder->spi_port.spi_port->OUTSET = 1<<7;
-	
-	while (extra_bits != 0) {
+
+	for (uint8_t bit_cnt = 0; bit_cnt < 5; bit_cnt++)  {
 		encoder->spi_port.spi_port->OUTCLR = (1<<7);
-        _delay_us(0.0625);
+        _delay_us(0.125);
 		// sample the bit
 		cli();
 		encoder->spi_port.spi_port->OUTSET = (1<<7);
-		encoder->input_buffer[3-data_bytes] |= (encoder->spi_port.spi_port->IN & (1<<6)) >> (7-extra_bits--);
+		encoder->input_buffer[0] |= ((encoder->spi_port.spi_port->IN & (1<<6)) >> (2+bit_cnt));
 		sei();
 		_delay_us(0.0625);
 	}
 	encoder->spi_port.spi_register->CTRL |= SPI_ENABLE_bm;
-	spi_start_receive(&(encoder->spi_port), encoder->input_buffer + 4 - (encoder->data_length/8),encoder->data_length/8);
-	while (encoder->spi_port.transaction_underway);
-	encoder->spi_port.spi_register->CTRL &= ~SPI_ENABLE_bm;
-	_SSI_ENCODER_SEND_CLOCK
+	spi_start_receive(&(encoder->spi_port), encoder->input_buffer+1,1);
 	// At this point the clock generator will run. When an Ack is received by the pin interrupt the ISR will start the SPI transfer
 	return 0;
 }
 
-void ssi_encoder_process_data(ssi_encoder_t *encoder) {
+void renishaw_ssi_encoder_process_data(renishaw_ssi_encoder_t *encoder) {
 	// Fill the data pointer. Since the xMega is little-endian, we have to swap the byte order, by shiffing the data in one byte at a time.
-	*(encoder->data_pointer) = ((uint32_t)encoder->input_buffer[0]) << 24 |
-	                           ((uint32_t)encoder->input_buffer[1]) << 16 |
-	                           ((uint32_t)encoder->input_buffer[2]) <<  8 |
-	                           ((uint32_t)encoder->input_buffer[3]);
+	*(encoder->data_pointer) = (((uint32_t)encoder->input_buffer[0]) << 8) |
+	                           ((uint32_t)encoder->input_buffer[1]);
 
 }
 
-bool ssi_encoder_read_complete(ssi_encoder_t *encoder) {
+bool renishaw_ssi_encoder_read_complete(renishaw_ssi_encoder_t *encoder) {
 	return !(encoder->spi_port.transaction_underway);
 }
 
