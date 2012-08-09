@@ -75,7 +75,7 @@ void pwm_disable_output(pwm_output_t *pwm_output) {
 		pwm_output->tc0_register->CTRLB &= ~(1<<((((intptr_t)pwm_output->cc_register - (intptr_t)pwm_output->tc0_register - 0x28)/0x2)+4));
 	else if (pwm_output->tc1_register)
 		// Now we have to do some magic pointer math to get a bit position from the cc register address
-		pwm_output->tc1_register->CTRLB |= ~(1<<((((intptr_t)pwm_output->cc_register - (intptr_t)pwm_output->tc1_register - 0x28)/0x2)+4));
+		pwm_output->tc1_register->CTRLB &= ~(1<<((((intptr_t)pwm_output->cc_register - (intptr_t)pwm_output->tc1_register - 0x28)/0x2)+4));
 
 }
 
