@@ -20,7 +20,8 @@ biss_encoder_t biss_encoder_init(PORT_t *spi_port, SPI_t *spi_register, void *ti
 
 	// The spi driver defaults to the wrong SPI mode, so we switch it now
 	spi_register->CTRL = (spi_register->CTRL & ~SPI_MODE_gm) | SPI_MODE_2_gc;
-
+	spi_port->DIRSET = 1<<7;
+	spi_port->OUTSET = 1<<7;
 	// Then just return the encoder
 	return encoder;
 }
@@ -86,7 +87,7 @@ bool biss_encoder_read_complete(biss_encoder_t *encoder) {
 }
 
 bool biss_encoder_data_valid(biss_encoder_t *encoder) {
-	return biss_encoder_read_complete(encoder) && (encoder->input_buffer[4] & (1<<7));
+	return biss_encoder_read_complete(encoder) && ((encoder->input_buffer[4] & (1<<7)) != 0);
 }
 
 

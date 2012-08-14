@@ -1,6 +1,6 @@
 #include "cpu.h"
 
-#define _CPU_OSC_TIMEOUT 100 // Number of loop counts to wait for the the oscillator to start
+#define _CPU_OSC_TIMEOUT 1000 // Number of loop counts to wait for the the oscillator to start
 
 bool cpu_set_clock_source(cpu_clock_source_t clk_source) {
 	// The bit mask for the desired oscillator source is the upper 8 bits of the clk_source value
