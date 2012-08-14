@@ -36,16 +36,19 @@ _usart_adc_buffer_t _usart_adc_USARTC0,
                     _usart_adc_USARTF1;
 
 #define USART_ADC_USES_PORT(USART_PORT) \
-ISR(USART_PORT##_TXC_vect) {\
-	PORTC.OUTTGL = 1; \
+ISR(USARTF0_TXC_vect) { \
+	PORTC.OUTSET = 1; \
 	if (_usart_adc_##USART_PORT.buffer_position < 7) { \
-		_usart_adc_##USART_PORT.rx_buffer[_usart_adc_##USART_PORT.buffer_position++] = USART_PORT.DATA; \
-		USART_PORT.DATA = _usart_adc_##USART_PORT.tx_buffer[_usart_adc_##USART_PORT.buffer_position]; \
+		USART_PORT.DATA = _usart_adc_##USART_PORT.tx_buffer[_usart_adc_##USART_PORT.buffer_position+1]; \
 	} \
-	else { \
-		_usart_adc_##USART_PORT.rx_buffer[_usart_adc_##USART_PORT.buffer_position++] = USART_PORT.DATA; \
+	PORTC.OUTCLR = 1; \
+} \
+ISR(USARTF0_RXC_vect) { \
+	PORTC.OUTSET = 0b10; \
+	_usart_adc_##USART_PORT.rx_buffer[_usart_adc_##USART_PORT.buffer_position++] = USART_PORT.DATA; \
+	if (_usart_adc_##USART_PORT.buffer_position > 7) \
 		_usart_adc_##USART_PORT.adc_pntr->currently_reading = false; \
-	} \
+	PORTC.OUTCLR = 0b10; \
 }\
 
 usart_adc_t usart_adc_init(PORT_t *usart_port, USART_t *usart_reg,uint16_t *ch0_dest,uint16_t *ch1_dest,uint16_t *ch2_dest,uint16_t *ch3_dest);

@@ -14,7 +14,7 @@ usart_adc_t usart_adc_init(PORT_t *usart_port, USART_t *usart_reg,uint16_t *ch0_
 	usart_port->DIRSET = 1<<1 | 1<<3;
 
 	// now setup the usart for SPI mode
-	usart_reg->CTRLA = USART_TXCINTLVL_LO_gc;
+	usart_reg->CTRLA = USART_TXCINTLVL_LO_gc | USART_RXCINTLVL_LO_gc;
 	usart_reg->CTRLB = USART_RXEN_bm | USART_TXEN_bm;
 	usart_reg->CTRLC = USART_CMODE_MSPI_gc;
 	usart_reg->BAUDCTRLA = 127;
@@ -35,8 +35,8 @@ usart_adc_t usart_adc_init(PORT_t *usart_port, USART_t *usart_reg,uint16_t *ch0_
 	}
 	buffer->tx_buffer[0] = 2<<3;
 	buffer->tx_buffer[2] = 2<<3;
-	buffer->tx_buffer[4] = 3<<3;
-	buffer->tx_buffer[6] = 3<3;
+	buffer->tx_buffer[4] = 2<<3;
+	buffer->tx_buffer[6] = 2<<3;
 
 	return adc;
 }
