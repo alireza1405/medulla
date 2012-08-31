@@ -52,6 +52,9 @@ int spi_start_transmit_receive(volatile spi_port_t *spi_port, void *tx_data, uin
 	// If this spi_port already has a transfer underway, then returrn -1
 	if (spi_port->transaction_underway == true)
 		return -1;
+
+	// Disable the SPI interrupt at this point, because sometimes the interrupt will get triggered before we have a chance to set the transaction underway flag. When this happens, it can created a deadlock situation if something is waiting on the completion of the transmit.	
+	spi_port->spi_register->INTCTRL = SPI_INTLVL_OFF_gc;
 	
 	// If the hardware already has a transfer underway, then return -2. Otherwise, take cntrol of the hardware
 	if (spi_port->spi_register == &SPIC) {
@@ -93,6 +96,9 @@ int spi_start_transmit_receive(volatile spi_port_t *spi_port, void *tx_data, uin
 
 	// Signal that a transaction is now in progress
 	spi_port->transaction_underway = true;
+	
+	// Now we can enable that interrupt safely
+	spi_port->spi_register->INTCTRL = SPI_INTLVL_MED_gc;
 	return 0;
 }
 
