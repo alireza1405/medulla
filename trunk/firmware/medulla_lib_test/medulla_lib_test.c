@@ -32,7 +32,7 @@ int main(void) {
 
 		while (!usart_adc_read_complete(&adc));
 		usart_adc_process_data(&adc);
-		printf("%04d, %04d\n",ch3, ch4);
+		printf("%04d, %04d\n",ch1, ch2);
 		_delay_ms(100);
 	}
 

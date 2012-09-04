@@ -39,13 +39,13 @@ usart_adc_t usart_adc_init(PORT_t *usart_port, USART_t *usart_reg, io_pin_t CS_p
 		case ((intptr_t)&USARTF1): buffer = &_usart_adc_USARTF1; break;
 		default: buffer = 0;
 	}
-	buffer->tx_buffer[0] = 3<<3;
+	buffer->tx_buffer[0] = 1<<3;
 	buffer->tx_buffer[1] = 0;
 	buffer->tx_buffer[2] = 2<<3;
 	buffer->tx_buffer[3] = 0;
 	buffer->tx_buffer[4] = 3<<3;
 	buffer->tx_buffer[5] = 0;
-	buffer->tx_buffer[6] = 2<<3;
+	buffer->tx_buffer[6] = 0<<3;
 	buffer->tx_buffer[7] = 0;
 
 	return adc;
