@@ -9,20 +9,24 @@
 #include <avr/interrupt.h>
 #include <stdbool.h>
 
+#include "io_pin.h"
+
 typedef struct {
 	PORT_t *usart_port;
 	USART_t *usart_reg;
+	io_pin_t CS_pin;
 	uint16_t *ch0_destination;
 	uint16_t *ch1_destination;
 	uint16_t *ch2_destination;
 	uint16_t *ch3_destination;
-	bool currently_reading;
+	volatile bool currently_reading;
 } usart_adc_t;
 
 typedef struct {
 	uint8_t tx_buffer[8];
 	uint8_t rx_buffer[8];
-	uint8_t buffer_position;
+	volatile uint8_t tx_buffer_position;
+	volatile uint8_t rx_buffer_position;
 	usart_adc_t *adc_pntr;
 } _usart_adc_buffer_t;
 
@@ -36,22 +40,25 @@ _usart_adc_buffer_t _usart_adc_USARTC0,
                     _usart_adc_USARTF1;
 
 #define USART_ADC_USES_PORT(USART_PORT) \
-ISR(USARTF0_TXC_vect) { \
+ISR(USART_PORT##_TXC_vect) { \
 	PORTC.OUTSET = 1; \
-	if (_usart_adc_##USART_PORT.buffer_position < 7) { \
-		USART_PORT.DATA = _usart_adc_##USART_PORT.tx_buffer[_usart_adc_##USART_PORT.buffer_position+1]; \
+	if (_usart_adc_##USART_PORT.tx_buffer_position < 7) { \
+		USART_PORT.DATA = _usart_adc_##USART_PORT.tx_buffer[++(_usart_adc_##USART_PORT.tx_buffer_position)]; \
 	} \
 	PORTC.OUTCLR = 1; \
 } \
-ISR(USARTF0_RXC_vect) { \
+\
+ISR(USART_PORT##_RXC_vect) { \
 	PORTC.OUTSET = 0b10; \
-	_usart_adc_##USART_PORT.rx_buffer[_usart_adc_##USART_PORT.buffer_position++] = USART_PORT.DATA; \
-	if (_usart_adc_##USART_PORT.buffer_position > 7) \
+	_usart_adc_##USART_PORT.rx_buffer[_usart_adc_##USART_PORT.rx_buffer_position++] = USART_PORT.DATA; \
+	if (_usart_adc_##USART_PORT.rx_buffer_position > 7) { \
 		_usart_adc_##USART_PORT.adc_pntr->currently_reading = false; \
+		io_set_output(_usart_adc_##USART_PORT.adc_pntr->CS_pin,io_high); \
+	} \
 	PORTC.OUTCLR = 0b10; \
 }\
 
-usart_adc_t usart_adc_init(PORT_t *usart_port, USART_t *usart_reg,uint16_t *ch0_dest,uint16_t *ch1_dest,uint16_t *ch2_dest,uint16_t *ch3_dest);
+usart_adc_t usart_adc_init(PORT_t *usart_port, USART_t *usart_reg, io_pin_t CS_pin, uint16_t *ch0_dest,uint16_t *ch1_dest,uint16_t *ch2_dest,uint16_t *ch3_dest);
 
 void usart_adc_start_read(usart_adc_t *usart_adc);
 
