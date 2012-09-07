@@ -8,6 +8,7 @@ typedef struct{
 	uint8_t tx_buffer[IMU_TX_BUFFER_LENGTH];
 	uint8_t rx_buffer[IMU_RX_BUFFER_LENGTH];
 	uart_port_t uart_port;
+	uint8_t current_data[IMU_RX_BUFFER_LENGTH];
 }IMU_data_t;
 
 void initIMU(PORT_t *port, USART_t *uart, IMU_data_t *imu_data);
