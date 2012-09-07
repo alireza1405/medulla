@@ -22,7 +22,7 @@ void IMURequestOrientation(IMU_data_t * imu_data){
 void IMUReceiveOrientation(IMU_data_t * imu_data){
 	uint8_t waiting_for = 67;
 	while(waiting_for){
-		waiting_for -= uart_rx_data(&(imu_data->uart_port), &(imu_data->rx_buffer[67 - waiting_for]), waiting_for);
+		waiting_for -= uart_rx_data(&(imu_data->uart_port), &(imu_data->current_data[67 - waiting_for]), waiting_for);
 		}
 }
 
