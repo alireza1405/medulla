@@ -37,6 +37,7 @@ pwm_output_t pwm_initilize_output(io_pin_t pwm_pin, pwm_clk_div_t clock_divider,
 		pwm.tc0_register->PER = cnt_max;
 		pwm.tc0_register->CTRLB = (pwm.tc0_register->CTRLB & ~TC0_WGMODE_gm) | TC_WGMODE_SS_gc;
 		pwm.tc0_register->CTRLA = (pwm.tc0_register->CTRLA & ~TC0_CLKSEL_gm) | clock_divider;
+		pwm.counter_reg = (TC1_t*)pwm.tc0_register;
 	}
 	else if (pwm_pin.pin < 6) { // If the pin is either 4 or 5 then use pins TC1
 		pwm.tc0_register = 0;
@@ -46,6 +47,7 @@ pwm_output_t pwm_initilize_output(io_pin_t pwm_pin, pwm_clk_div_t clock_divider,
 		pwm.tc1_register->PER = cnt_max;
 		pwm.tc1_register->CTRLB = (pwm.tc1_register->CTRLB & ~TC1_WGMODE_gm) | TC_WGMODE_SS_gc; 
 		pwm.tc1_register->CTRLA = (pwm.tc1_register->CTRLA & ~TC1_CLKSEL_gm) | clock_divider;
+		pwm.counter_reg = pwm.tc1_register;
 	}
 	else {
 		pwm.tc0_register = 0;
@@ -80,7 +82,11 @@ void pwm_disable_output(pwm_output_t *pwm_output) {
 }
 
 void pwm_set_output(pwm_output_t *pwm_output, uint16_t value) {
-	if (pwm_output->cc_register) // Make sure that the cc pointer actually points to something before we use it
+	if (pwm_output->cc_register) { // Make sure that the cc pointer actually points to something before we use it
+		while ((pwm_output->counter_reg->CNT <= value) ||
+		       (((int16_t)pwm_output->counter_reg->CNT <  (((int16_t)*pwm_output->cc_register) - 100)) && 
+		       ((int16_t)pwm_output->counter_reg->CNT <  (((int16_t)value) - 100))));
 		*(pwm_output->cc_register) = value;
+	}
 }
 

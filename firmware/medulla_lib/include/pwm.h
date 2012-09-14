@@ -45,6 +45,7 @@ typedef struct {
 	io_pin_t pwm_pin;		/**< Pin to ouput PWM on */
 	TC0_t *tc0_register;		/**< Pointer to timer counter register if it uses a TC0 Counter */
 	TC1_t *tc1_register;		/**< Pointer to the timer counter register if it uses a TC1 counter */
+	TC1_t *counter_reg;
 	uint16_t *cc_register;		/**< Pointer to the capture compare register. This is used to set PWM value;*/
 	pwm_clk_div_t clock_divider;	/**< Desired clock divider */
 } pwm_output_t;
