@@ -19,7 +19,7 @@ renishaw_ssi_encoder_t renishaw_ssi_encoder_init(PORT_t *spi_port, SPI_t *spi_re
 	encoder.input_buffer[1] = 0;
 
 	// The spi driver defaults to the wrong SPI mode, so we switch it now
-	spi_register->CTRL = (spi_register->CTRL & ~SPI_MODE_gm) | SPI_MODE_1_gc;
+	spi_register->CTRL = (spi_register->CTRL & ~SPI_MODE_gm) | SPI_MODE_2_gc;
 
 	spi_port->DIRSET = 1<<7;
 	spi_port->OUTSET = 1<<7;
