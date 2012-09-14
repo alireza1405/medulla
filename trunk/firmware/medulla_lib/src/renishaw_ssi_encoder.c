@@ -53,14 +53,14 @@ int renishaw_ssi_encoder_start_reading(renishaw_ssi_encoder_t *encoder) {
 	sei();
 
 	for (uint8_t bit_cnt = 0; bit_cnt < 5; bit_cnt++)  {
-		encoder->spi_port.spi_port->OUTCLR = (1<<7);
-        _delay_us(0.125);
-		// sample the bit
 		cli();
-		encoder->spi_port.spi_port->OUTSET = (1<<7);
+		encoder->spi_port.spi_port->OUTCLR = (1<<7);
+		// sample the bit
 		encoder->input_buffer[0] |= ((encoder->spi_port.spi_port->IN & (1<<6)) >> (2+bit_cnt));
 		sei();
 		_delay_us(0.0625);
+		encoder->spi_port.spi_port->OUTSET = (1<<7);
+        _delay_us(0.125);
 	}
 	encoder->spi_port.spi_register->CTRL |= SPI_ENABLE_bm;
 	spi_start_receive(&(encoder->spi_port), encoder->input_buffer+1,1);
