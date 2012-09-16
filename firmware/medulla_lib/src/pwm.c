@@ -83,9 +83,8 @@ void pwm_disable_output(pwm_output_t *pwm_output) {
 
 void pwm_set_output(pwm_output_t *pwm_output, uint16_t value) {
 	if (pwm_output->cc_register) { // Make sure that the cc pointer actually points to something before we use it
-		while ((pwm_output->counter_reg->CNT <= value) ||
-		       (((int16_t)pwm_output->counter_reg->CNT <  (((int16_t)*pwm_output->cc_register) - 100)) && 
-		       ((int16_t)pwm_output->counter_reg->CNT <  (((int16_t)value) - 100))));
+		while(((int16_t)pwm_output->counter_reg->CNT <= (*pwm_output->cc_register)) && 
+		       ((int16_t)pwm_output->counter_reg->CNT >  (((int16_t)value) - 100)));
 		*(pwm_output->cc_register) = value;
 	}
 }
