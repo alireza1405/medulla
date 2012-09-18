@@ -1,7 +1,7 @@
 #include "usart_adc.h"
 
 usart_adc_t usart_adc_init(PORT_t *usart_port, USART_t *usart_reg, io_pin_t CS_pin, uint16_t *ch0_dest,uint16_t *ch1_dest,uint16_t *ch2_dest,uint16_t *ch3_dest) {
-
+	PORTC.DIRSET = 1;
 	// setup the adc struct
 	usart_adc_t adc;
 	adc.usart_port = usart_port;
@@ -18,7 +18,7 @@ usart_adc_t usart_adc_init(PORT_t *usart_port, USART_t *usart_reg, io_pin_t CS_p
 	usart_reg->CTRLA = USART_TXCINTLVL_MED_gc | USART_RXCINTLVL_MED_gc;
 	usart_reg->CTRLB = USART_RXEN_bm | USART_TXEN_bm;
 	usart_reg->CTRLC = USART_CMODE_MSPI_gc;
-	usart_reg->BAUDCTRLA = 127;
+	usart_reg->BAUDCTRLA = 7;
 
 	// Setup the chip select pin
 	adc.CS_pin = CS_pin;
@@ -71,7 +71,6 @@ void usart_adc_start_read(usart_adc_t *usart_adc) {
 		default: buffer = 0;
 	}
 	io_set_output(usart_adc->CS_pin,io_low);
-	
 	buffer->adc_pntr = usart_adc;
 
 	buffer->tx_buffer_position = 0;
