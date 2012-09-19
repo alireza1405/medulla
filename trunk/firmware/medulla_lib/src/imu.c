@@ -23,9 +23,12 @@ bool IMU_received_orientation(IMU_data_t * imu_data){
 }
 
 void IMU_process_orientation(IMU_data_t * imu_data){
+	char burn[2];
 	if (IMU_received_orientation(imu_data) == false)
 		return;
 
+	uart_rx_data(&(imu_data->uart_port), &burn, 1);
 	uart_rx_data(&(imu_data->uart_port),imu_data->imu_data_buffer,64);
+	uart_rx_data(&(imu_data->uart_port), &burn, 2);
 }
 
