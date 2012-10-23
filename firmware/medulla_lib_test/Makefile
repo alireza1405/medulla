@@ -51,7 +51,7 @@ COPY = cp
 
 # Define rules
 
-all: $(OUTPUT).hex size
+all: $(OUTPUT).hex
 
 clean:
 	$(REMOVE) $(OBJS)
@@ -60,10 +60,6 @@ clean:
 
 program: all
 	$(AVRDUDE) -p $(MCU) -P $(PORT) -c $(PROGRAMMER) -U flash:w:$(OUTPUT).hex
-
-size:
-	@if test -f $(OUTPUT_DIR)/$(OUTPUT).elf; then echo; echo Size of: $(OUTPUT).elf; $(SIZE) --mcu=$(MCU) --format=avr $(OUTPUT_DIR)/$(OUTPUT).elf; \
-	2>/dev/null; echo; fi
 
 %.hex : %.elf
 	@echo
