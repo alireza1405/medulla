@@ -7,6 +7,7 @@
 #include <vendortype.h>
 #include <entrytype.h>
 #include <pdotype.h>
+#include <devicetype.h>
 
 namespace Ui {
 class sii_tool;

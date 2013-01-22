@@ -6,15 +6,31 @@ syncManagerType::syncManagerType(QDomElement element)
 
     // Parse value for SM type
     if (element.text().compare("MBoxOut") == 0)
+    {
+        qDebug()<<"SM type: MBoxOut";
         smType = mailboxOut;
+    }
     else if (element.text().compare("MBoxIn") == 0)
+    {
+        qDebug()<<"SM type: MBoxIn";
         smType = mailboxIn;
+    }
     else if (element.text().compare("Outputs") == 0)
+    {
+        qDebug()<<"SM type: Outputs";
         smType = processDataOut;
+    }
     else if (element.text().compare("Inputs") == 0)
+    {
+        qDebug()<<"SM type: Inputs";
         smType = processDataIn;
+    }
     else
+    {
+        qDebug()<<"SM type: Unused";
         smType = unused;
+        return;
+    }
 
     attributeStr = element.attribute("StartAddress");
     if (!attributeStr.isEmpty())

@@ -4,11 +4,20 @@
 #include <QtXml>
 #include <stdint.h>
 #include <QString>
+#include <QList>
+#include <QDebug>
+
+#include "fmmutype.h"
+#include "syncmanagertype.h"
+#include "pdotype.h"
+#include "dctype.h"
+#include "eepromtype.h"
+#include "vendortype.h"
 
 class DeviceType
 {
 public:
-    DeviceType(QDomElement element);
+    DeviceType(QDomElement element, VendorType *deviceVendor);
 
     enum physicsType {
         notUsed = 0x00,
@@ -16,13 +25,15 @@ public:
         EBUS = 0x02
     };
 
+    void parseType(QDomElement element);
+    void write_sii();
+
     uint32_t productCode;
     uint32_t revisionNumber;
     uint32_t serialNumber;
     uint16_t mailboxProtocol;
     QString groupName;
     QByteArray image;
-    QString order;
     QString name;
     bool enableSDO;
     bool enableSDOInfo;
@@ -36,6 +47,13 @@ public:
     bool enableenableNotLRW;
     uint16_t ebusCurrent;
     physicsType physics[4];
+    QList<fmmuType> fmmus;
+    QList<syncManagerType> syncManagers;
+    QList<pdoType> txPDOs;
+    QList<pdoType> rxPDOs;
+    dcType *dcConf;
+    eepromType *eeprom;
+    VendorType *vendor;
 };
 
 #endif // DEVICETYPE_H

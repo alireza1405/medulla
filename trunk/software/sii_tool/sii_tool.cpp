@@ -19,25 +19,9 @@ sii_tool::sii_tool(QWidget *parent) :
         return;
     }
     file.close();
-    /*qDebug()<<"Creating eepromType object";
-    eepromType eeprom(doc.elementsByTagName("EtherCATInfo").at(0).toElement().elementsByTagName("Eeprom").at(0).toElement());
 
-    qDebug()<<"Creating vendorType object";
-    VendorType vendor(doc.elementsByTagName("EtherCATInfo").at(0).toElement().elementsByTagName("Vendor").at(0).toElement());
-
-    qDebug()<<"creating entryType object";
-    EntryType entry(doc.elementsByTagName("EtherCATInfo").at(0).toElement().elementsByTagName("Entry").at(0).toElement());
-    qDebug()<<"Index:"<<entry.index;
-    qDebug()<<"SubIndex:"<<entry.subIndex;
-    qDebug()<<"BitLen:"<<entry.bitLen;
-    qDebug()<<"Name:"<<entry.name;
-    qDebug()<<"DataTypeIndex"<<entry.typeIndex;*/
-
-    qDebug()<<"Creating PDO Object";
-    pdoType pdo(doc.elementsByTagName("EtherCATInfo").at(0).toElement().elementsByTagName("TxPdo").at(0).toElement());
-    qDebug()<<"Sm:"<<pdo.syncManager;
-    qDebug()<<"Fixed:"<<pdo.fixed;
-    qDebug()<<"Mand:"<<pdo.mandatory;
+    qDebug()<<"Creating device Object";
+    DeviceType pdo(doc.elementsByTagName("EtherCATInfo").at(0).toElement().elementsByTagName("Device").at(0).toElement());
 }
 
 sii_tool::~sii_tool()

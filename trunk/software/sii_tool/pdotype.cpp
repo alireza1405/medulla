@@ -30,7 +30,10 @@ pdoType::pdoType(QDomElement element)
     // Parse PDO Entry list
     nodes = element.elementsByTagName("Entry");
     for (int entry = 0; entry < nodes.count(); entry++)
+    {
+        qDebug()<<"Parsing PDO entry"<<entry;
         pdoEntries.append(EntryType(nodes.at(entry).toElement()));
+    }
 
     // Parse attributes
     fixed = element.attribute("Fixed","0").at(0) != '0';
