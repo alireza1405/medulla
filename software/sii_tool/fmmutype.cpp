@@ -6,11 +6,20 @@ fmmuType::fmmuType(QDomElement element)
 
     // Parse value for fmmu type
     if (element.text().compare("Outputs") == 0)
+    {
         type = processDataOut;
+        qDebug()<<"FMMU type: Outputs";
+    }
     else if (element.text().compare("Inputs") == 0)
+    {
         type = processDataIn;
+        qDebug()<<"FMMU type: Inputs";
+    }
     else if (element.text().compare("MBoxState") == 0)
+    {
         type = syncMStatus;
+        qDebug()<<"FMMU type: MBoxState";
+    }
     else
         type = unused;
 

@@ -1,5 +1,5 @@
 #include "dctype.h"
 
-dcType::dcType()
+dcType::dcType(QDomElement element)
 {
 }

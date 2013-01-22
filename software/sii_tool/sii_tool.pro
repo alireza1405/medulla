@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2013-01-04T22:24:56
+# Project created by QtCreator 2013-01-20T12:50:21
 #
 #-------------------------------------------------
 
@@ -11,28 +11,30 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = sii_tool
 TEMPLATE = app
 
+QMAKE_CXXFLAGS += -std=gnu++11
 
-SOURCES += main.cpp\
-        sii_tool.cpp \
+
+SOURCES += main.cpp \
     vendortype.cpp \
+    syncmanagertype.cpp \
+    sii_tool.cpp \
+    pdotype.cpp \
+    fmmutype.cpp \
+    entrytype.cpp \
     eepromtype.cpp \
     devicetype.cpp \
-    entrytype.cpp \
-    pdotype.cpp \
-    syncmanagertype.cpp \
-    fmmutype.cpp \
     dctype.cpp
 
-HEADERS  += sii_tool.h \
+HEADERS  += \
     vendortype.h \
+    syncmanagertype.h \
+    sii_tool.h \
+    pdotype.h \
+    fmmutype.h \
+    entrytype.h \
     eepromtype.h \
     devicetype.h \
-    entrytype.h \
-    pdotype.h \
-    syncmanagertype.h \
-    fmmutype.h \
     dctype.h
 
-FORMS    += sii_tool.ui
-
-QMAKE_CXXFLAGS += -std=gnu++11
+FORMS    += \
+    sii_tool.ui
