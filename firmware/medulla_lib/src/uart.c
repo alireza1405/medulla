@@ -31,7 +31,7 @@ uart_port_t uart_init_port(PORT_t *port_reg, USART_t *uart_reg, uart_baud_t baud
 		port.uart_port->DIRCLR = (1<<6);
 	}
 	else {
-		// If this is a USART0, then use ins 2 and 3
+		// If this is a USART0, then use pins 2 and 3
 		port.uart_port->OUTSET = (1<<3);
 		port.uart_port->DIRSET = (1<<3);
 		port.uart_port->DIRCLR = (1<<2);
