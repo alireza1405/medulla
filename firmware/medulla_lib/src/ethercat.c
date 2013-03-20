@@ -112,7 +112,7 @@ uint16_t _ecat_write_address(ecat_slave_t *ecat_slave, uint16_t address, uint8_t
 	
 	out_data[0] = (uint8_t)(address>>5);
 
-	if (address>0xFFF) {
+	if (address>0x1FFF) {
 		out_data[1] = ((uint8_t)(address&0x1F)<<3) | _ECAT_ADDREX_CMD;
 		out_data[2] = ((uint8_t)(address>>8)&0xE0) | (command<<2);
 		addr_data_length = 3;
