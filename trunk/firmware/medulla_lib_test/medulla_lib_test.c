@@ -3,13 +3,58 @@
 
 #include "uart.h"
 #include "cpu.h"
-#include "usart_adc.h"
-#include "biss_encoder.h"
+#include "io_pin.h"
 
 UART_USES_PORT(USARTE0)
-USART_ADC_USES_PORT(USARTF0)
-SPI_USES_PORT(SPIC)
-SPI_USES_PORT(SPID)
+
+int32_t read_reg(uint8_t reg)
+{
+	int32_t result;
+	USARTF0.DATA = 1<<6 | ((reg & 0b111)<<3);
+	_delay_us(1);
+	while (!(USARTF0.STATUS & 1<<7));
+	result = USARTF0.DATA;
+	_delay_us(100);
+	USARTF0.DATA = 0;
+	_delay_us(1);
+	while (!(USARTF0.STATUS & 1<<7));
+	result = USARTF0.DATA;
+	_delay_us(100);
+	USARTF0.DATA = 0;
+	_delay_us(1);
+	while (!(USARTF0.STATUS & 1<<7));
+	result = result<<8 | USARTF0.DATA;
+	_delay_us(100);
+	USARTF0.DATA = 0;
+	_delay_us(1);
+	while (!(USARTF0.STATUS & 1<<7));
+	result = result<<8 | USARTF0.DATA;
+	return result;
+}
+
+void write_reg(uint8_t reg,uint32_t value)
+{
+	uint8_t data;
+	USARTF0.DATA = ((reg & 0b111)<<3);
+	_delay_us(1);
+	while (!(USARTF0.STATUS & 1<<7));
+	data = USARTF0.DATA;
+	_delay_us(100);
+	USARTF0.DATA = (uint8_t)((value>>16) & 0xFF);
+	_delay_us(1);
+	while (!(USARTF0.STATUS & 1<<7));
+	data = USARTF0.DATA;
+	_delay_us(100);
+	USARTF0.DATA = (uint8_t)((value>>8) & 0xFF);
+	_delay_us(1);
+	while (!(USARTF0.STATUS & 1<<7));
+	data = USARTF0.DATA;
+	_delay_us(100);
+	USARTF0.DATA = (uint8_t)(value & 0xFF);
+	_delay_us(1);
+	while (!(USARTF0.STATUS & 1<<7));
+	data = USARTF0.DATA;
+}
 
 int main(void) {
 	cpu_set_clock_source(cpu_32mhz_clock);
@@ -23,28 +68,35 @@ int main(void) {
 	uart_port_t debug_port = uart_init_port(&PORTE, &USARTE0, uart_baud_115200, outbuffer, 128, inbuffer, 128);
 	uart_connect_port(&debug_port, true);
 	printf("Starting...\n");
-	uint32_t encoder;
-	uint32_t encoder2;
-	uint16_t time;
-	uint16_t time2;
-	biss_encoder_t motor_encoder = biss_encoder_init(&PORTC,&SPIC,&TCC0,32,&encoder,&time);
-	biss_encoder_t leg_encoder = biss_encoder_init(&PORTD,&SPID,&TCC0,32,&encoder2,&time2);
-	PORTC.DIRSET = 0b11;
 
-	uint16_t ch1, ch2, ch3, ch4;
+	PORTF.DIRSET = 1<<1 | 1<<3;
 
-	usart_adc_t adc = usart_adc_init(&PORTF, &USARTF0, io_init_pin(&PORTD,4), &ch1, &ch2, &ch3, &ch4);
+	// now setup the usart for SPI mode
+	//USARTF->CTRLA = USART_TXCINTLVL_MED_gc | USART_RXCINTLVL_MED_gc;
+	USARTF0.CTRLB = USART_RXEN_bm | USART_TXEN_bm;
+	USARTF0.CTRLC = USART_CMODE_MSPI_gc | 1<<1;
+	PORTF.PIN1CTRL |= 1<<6;
+	USARTF0.BAUDCTRLA = 100;
+
+	// Setup the chip select pin
+	io_pin_t CS_pin = io_init_pin(&PORTD,4);
+	io_set_direction(CS_pin,io_output);
+	io_set_output(CS_pin,io_low);
+
+	_delay_ms(1000);
+	int32_t adc;
+
+	// Configure ADC register
+	write_reg(2,0x110);
 
 	while (1) {
-		usart_adc_start_read(&adc);
-		biss_encoder_start_reading(&motor_encoder);
-		biss_encoder_start_reading(&leg_encoder);
-
-		while (!usart_adc_read_complete(&adc));
-		while (!biss_encoder_read_complete(&motor_encoder));
-		while (!biss_encoder_read_complete(&leg_encoder));
-		usart_adc_process_data(&adc);
-		printf("%04d\n",ch3);
+		// Start conversion
+		write_reg(1,0x080001 | ((uint32_t)(0b001)<<21));
+		// Wait for conversion ready
+		while ((PORTF.IN & (1<<3)) == 0);
+		adc = read_reg(3);
+		adc -= (int32_t)(0x800000);
+		printf("%ld\n",adc);
 		_delay_ms(100);
 	}
 
