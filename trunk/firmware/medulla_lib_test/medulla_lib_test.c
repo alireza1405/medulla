@@ -88,12 +88,9 @@ int main(void) {
 
 	// Configure ADC register
 	write_reg(2,0x110);
+	write_reg(1,0x080004);
 
 	while (1) {
-		// Start conversion
-		write_reg(1,0x080001 | ((uint32_t)(0b001)<<21));
-		// Wait for conversion ready
-		while ((PORTF.IN & (1<<3)) == 0);
 		adc = read_reg(3);
 		adc -= (int32_t)(0x800000);
 		printf("%ld\n",adc);
