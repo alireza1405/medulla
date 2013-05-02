@@ -5,27 +5,18 @@
 #include <stdint.h>
 #include <QtXml>
 #include <QDebug>
+#include <QByteArray>
 
 class eepromType
 {
 public:
     eepromType(QDomElement element);
 
-    void setSize(uint16_t newSize);
-    void setConfigData(uint16_t newConfigData[]);
-    void setBootStrap(uint16_t newBootStrap[8]);
-
-    uint16_t getSize();
-    uint16_t* getConfigData();
-    uint16_t* getBootStrap();
-    bool hasDefinedData();
-
-    std::vector<uint16_t> data;
-
-private:
     uint16_t size; // Size of eeprom in bytes
-    uint16_t configData[7]; // Configuration data
-    uint16_t bootStrap[4]; // Bootstrap mailbox section data
+    QByteArray configData; // Configuration data
+    QByteArray bootStrap; // Bootstrap mailbox section data
+    QByteArray eepromData; // Full eeprom data stored here if it's in the ESI file.
+    QByteArray siiData;
     bool definedData;
 };
 

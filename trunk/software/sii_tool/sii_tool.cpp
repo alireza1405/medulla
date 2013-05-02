@@ -21,7 +21,7 @@ sii_tool::sii_tool(QWidget *parent) :
     file.close();
 
     qDebug()<<"Creating device Object";
-    DeviceType pdo(doc.elementsByTagName("EtherCATInfo").at(0).toElement().elementsByTagName("Device").at(0).toElement());
+    pdoType pdo(doc.elementsByTagName("EtherCATInfo").at(0).toElement().elementsByTagName("Device").at(0).toElement());
 }
 
 sii_tool::~sii_tool()

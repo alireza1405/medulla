@@ -38,3 +38,6 @@ HEADERS  += \
 
 FORMS    += \
     sii_tool.ui
+
+OTHER_FILES += \
+    testESI.xml
