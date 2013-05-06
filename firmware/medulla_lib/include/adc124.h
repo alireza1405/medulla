@@ -30,14 +30,14 @@ typedef struct {
 	adc124_t *adc_pntr;
 } _adc124_buffer_t;
 
-_adc124_buffer_t _usart_adc_USARTC0,
-                    _adc124_USARTC1,
-                    _adc124_USARTD0,
-                    _adc124_USARTD1,
-                    _adc124_USARTE0,
-                    _adc124_USARTE1,
-                    _adc124_USARTF0,
-                    _adc124_USARTF1;
+_adc124_buffer_t _adc124_USARTC0,
+                 _adc124_USARTC1,
+                 _adc124_USARTD0,
+                 _adc124_USARTD1,
+                 _adc124_USARTE0,
+                 _adc124_USARTE1,
+                 _adc124_USARTF0,
+                 _adc124_USARTF1;
 
 #define ADC124_USES_PORT(USART_PORT) \
 ISR(USART_PORT##_TXC_vect) { \
