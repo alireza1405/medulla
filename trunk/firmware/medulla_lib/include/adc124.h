@@ -41,16 +41,16 @@ _adc124_buffer_t _usart_adc_USARTC0,
 
 #define ADC124_USES_PORT(USART_PORT) \
 ISR(USART_PORT##_TXC_vect) { \
-	if (_usart_adc_##USART_PORT.tx_buffer_position < 7) { \
-		USART_PORT.DATA = _usart_adc_##USART_PORT.tx_buffer[++(_usart_adc_##USART_PORT.tx_buffer_position)]; \
+	if (_adc124_##USART_PORT.tx_buffer_position < 7) { \
+		USART_PORT.DATA = _adc124_##USART_PORT.tx_buffer[++(_adc124_##USART_PORT.tx_buffer_position)]; \
 	} \
 } \
 \
 ISR(USART_PORT##_RXC_vect) { \
-	_usart_adc_##USART_PORT.rx_buffer[_usart_adc_##USART_PORT.rx_buffer_position++] = USART_PORT.DATA; \
-	if (_usart_adc_##USART_PORT.rx_buffer_position > 7) { \
-		(_usart_adc_##USART_PORT.adc_pntr)->currently_reading = false; \
-		_usart_adc_##USART_PORT.adc_pntr->CS_pin.io_port->OUTSET = 1<<_usart_adc_##USART_PORT.adc_pntr->CS_pin.pin; \
+	_adc124_##USART_PORT.rx_buffer[_adc124_##USART_PORT.rx_buffer_position++] = USART_PORT.DATA; \
+	if (_adc124_##USART_PORT.rx_buffer_position > 7) { \
+		(_adc124_##USART_PORT.adc_pntr)->currently_reading = false; \
+		_adc124_##USART_PORT.adc_pntr->CS_pin.io_port->OUTSET = 1<<_adc124_##USART_PORT.adc_pntr->CS_pin.pin; \
 	} \
 }\
 
