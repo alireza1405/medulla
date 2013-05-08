@@ -17,7 +17,7 @@
 typedef struct {
 	PORT_t *usart_port;
 	USART_t *usart_reg;
-	uint16_t *destination;
+	int16_t *destination;
 	volatile bool currently_reading;
 } ad7193_t;
 
@@ -37,16 +37,38 @@ _ad7193_buffer_t _usart_adc_USARTC0,
                     _ad7193_USARTF1;
 
 #define AD7193_USES_PORT(USART_PORT) \
-ISR(USART_PORT##_RXC_vect) { \
+ISR(USART_PORT##_TXC_vect) { /* TX complete interrupt used for sending configuration */ \
+	if (_ad7193_##USART_PORT.buffer_position < 4) { \
+		USART_PORT.DATA = _ad7193_##USART_PORT.buffer[buffer_position]; \
+		_ad7193_##USART_PORT.buffer_position += 1; \
+	} \
+ \
+ISR(USART_PORT##_RXC_vect) { /* RX complete interrupt used for reading ADC data */ \
 	if (_ad7193_##USART_PORT.buffer_position > 0)  \
 		_ad7193_##USART_PORT.buffer[5 - _ad7193_##USART_PORT.buffer_position] = USART_PORT.DATA; \
 	if (_ad7193_##USART_PORT.buffer_position < 4)  \
 		USART_PORT.DATA = 0; \
+	else { \
+		_adc7193_##USART_PORT.buffer_position = 0; \
+		_adc7193_##USART_PORT.adc_pntr->current_reading = false; \
+	} \
 } \
 
 ad7193_t ad7193_init(PORT_t *usart_port, USART_t *usart_reg, uint16_t *destination);
 
-void ad7193_start_read(ad7193_t *usart_adc);
+/** @brief Starts clocking in data from the ADC
+ *
+ * 	This function begins clocking in a word of data from the ADC. Note that if 
+ * 	the ADC finishes a conversion while data is being clocked out, all the data
+ * 	clocked out after that time will be from the new sample. This may cause data
+ * 	corruption.
+ * 	TODO: Consider implementing a synchronization method. 
+ *
+ *  @param adc Pointer to the ad7193_t struct to start reading.
+ *  @return true - Successfully started clocking in data.
+ *  @return false - Failed to start reading data because USART already active.
+ */
+bool ad7193_start_read(ad7193_t *usart_adc);
 
 bool ad7193_read_complete(ad7193_t *usart_adc);
 
