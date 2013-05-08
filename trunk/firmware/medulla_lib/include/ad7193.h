@@ -12,7 +12,9 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/delay.h>
 #include <stdbool.h>
+#include <string.h>
 
 typedef struct {
 	PORT_t *usart_port;
@@ -27,14 +29,14 @@ typedef struct {
 	ad7193_t *adc_pntr;
 } _ad7193_buffer_t;
 
-_ad7193_buffer_t _usart_adc_USARTC0,
-                    _ad7193_USARTC1,
-                    _ad7193_USARTD0,
-                    _ad7193_USARTD1,
-                    _ad7193_USARTE0,
-                    _ad7193_USARTE1,
-                    _ad7193_USARTF0,
-                    _ad7193_USARTF1;
+_ad7193_buffer_t _ad7193_USARTC0,
+                 _ad7193_USARTC1,
+                 _ad7193_USARTD0,
+                 _ad7193_USARTD1,
+                 _ad7193_USARTE0,
+                 _ad7193_USARTE1,
+                 _ad7193_USARTF0,
+                 _ad7193_USARTF1;
 
 #define AD7193_USES_PORT(USART_PORT) \
 ISR(USART_PORT##_TXC_vect) { /* TX complete interrupt used for sending configuration */ \
@@ -42,19 +44,20 @@ ISR(USART_PORT##_TXC_vect) { /* TX complete interrupt used for sending configura
 		USART_PORT.DATA = _ad7193_##USART_PORT.buffer[buffer_position]; \
 		_ad7193_##USART_PORT.buffer_position += 1; \
 	} \
+	else \
+		_ad7193_##USART_PORT.adc_pntr->currently_reading = false; \
+} \
  \
 ISR(USART_PORT##_RXC_vect) { /* RX complete interrupt used for reading ADC data */ \
 	if (_ad7193_##USART_PORT.buffer_position > 0)  \
 		_ad7193_##USART_PORT.buffer[5 - _ad7193_##USART_PORT.buffer_position] = USART_PORT.DATA; \
 	if (_ad7193_##USART_PORT.buffer_position < 4)  \
 		USART_PORT.DATA = 0; \
-	else { \
-		_adc7193_##USART_PORT.buffer_position = 0; \
+	else \
 		_adc7193_##USART_PORT.adc_pntr->current_reading = false; \
-	} \
 } \
 
-ad7193_t ad7193_init(PORT_t *usart_port, USART_t *usart_reg, uint16_t *destination);
+ad7193_t ad7193_init(PORT_t *usart_port, USART_t *usart_reg, int16_t *destination);
 
 /** @brief Starts clocking in data from the ADC
  *
