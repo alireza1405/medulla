@@ -41,7 +41,7 @@ _ad7193_buffer_t _ad7193_USARTC0,
 #define AD7193_USES_PORT(USART_PORT) \
 ISR(USART_PORT##_TXC_vect) { /* TX complete interrupt used for sending configuration */ \
 	if (_ad7193_##USART_PORT.buffer_position < 4) { \
-		USART_PORT.DATA = _ad7193_##USART_PORT.buffer[buffer_position]; \
+		USART_PORT.DATA = _ad7193_##USART_PORT.buffer[_ad7193_##USART_PORT.buffer_position]; \
 		_ad7193_##USART_PORT.buffer_position += 1; \
 	} \
 	else \
@@ -49,12 +49,14 @@ ISR(USART_PORT##_TXC_vect) { /* TX complete interrupt used for sending configura
 } \
  \
 ISR(USART_PORT##_RXC_vect) { /* RX complete interrupt used for reading ADC data */ \
+	PORTC.OUTSET = 1; \
 	if (_ad7193_##USART_PORT.buffer_position > 0)  \
 		_ad7193_##USART_PORT.buffer[5 - _ad7193_##USART_PORT.buffer_position] = USART_PORT.DATA; \
 	if (_ad7193_##USART_PORT.buffer_position < 4)  \
 		USART_PORT.DATA = 0; \
 	else \
-		_adc7193_##USART_PORT.adc_pntr->current_reading = false; \
+		_ad7193_##USART_PORT.adc_pntr->currently_reading = false; \
+	PORTC.OUTCLR = 1; \
 } \
 
 ad7193_t ad7193_init(PORT_t *usart_port, USART_t *usart_reg, int16_t *destination);
