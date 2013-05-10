@@ -39,7 +39,7 @@ bool _ad7193_reset(_ad7193_buffer_t *adc_buffer)
 	return true;
 }
 
-ad7193_t adc7193_init(PORT_t *usart_port, USART_t *usart_reg, int16_t *destination) {
+ad7193_t ad7193_init(PORT_t *usart_port, USART_t *usart_reg, int16_t *destination) {
 	// First set up our adc struct
 	ad7193_t adc;
 	adc.usart_port = usart_port;
@@ -52,6 +52,10 @@ ad7193_t adc7193_init(PORT_t *usart_port, USART_t *usart_reg, int16_t *destinati
 	adc.usart_reg->CTRLC = USART_CMODE_MSPI_gc | 1<<1;
 	adc.usart_port->PIN1CTRL |= 1<<6;
 	adc.usart_reg->BAUDCTRLA = 3;
+	adc.usart_reg->CTRLA = USART_TXCINTLVL_MED_gc;
+
+	adc.usart_port->DIRSET = 1<<1 | 1<<3;
+	adc.usart_port->DIRCLR = 1<<2;
 
 	// setup the transmit buffer so we can configure the ADC
 	_ad7193_buffer_t *buffer;
@@ -74,7 +78,7 @@ ad7193_t adc7193_init(PORT_t *usart_port, USART_t *usart_reg, int16_t *destinati
 	_ad7193_write_reg(buffer,2,0x4);
 	_ad7193_write_reg(buffer,1,0x080004);
 
-	USARTF0.CTRLA = USART_RXCINTLVL_MED_gc;
+	adc.usart_reg->CTRLA = USART_RXCINTLVL_MED_gc;
 
 	return adc;
 }
