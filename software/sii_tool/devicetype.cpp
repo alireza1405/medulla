@@ -1,6 +1,6 @@
 #include "devicetype.h"
 
-DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor, bool verbose)
+DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor, QList<GroupType> groupList, bool verbose)
 {
     verb = verbose;
     vendor = deviceVendor;
@@ -21,13 +21,13 @@ DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor, bool verbo
             if ((attributeStr.at(i) == 'Y') || (attributeStr.at(i) == 'H')) {
                 physics[i] = MII;
                 if (verb)
-                    qDebug()<<"Port"<<i<<"using MII physics.";
+                    qDebug()<<"-Port"<<i<<"using MII physics.";
             }
             else if (attributeStr.at(i) == 'K')
             {
                 physics[i] = EBUS;
                 if (verb)
-                    qDebug()<<"Port"<<i<<"using EBUS physics.";
+                    qDebug()<<"-Port"<<i<<"using EBUS physics.";
             }
         }
     }
@@ -39,7 +39,7 @@ DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor, bool verbo
     if (nodes.count() > 0)
     {
         if (verb)
-            qDebug()<<"Found Type element:"<<nodes.at(0).toElement().text();
+            qDebug()<<"-Found Type element:"<<nodes.at(0).toElement().text();
         parseType(nodes.at(0).toElement());
     }
     else
@@ -47,11 +47,26 @@ DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor, bool verbo
 
     // Parse GroupType element
     nodes = element.elementsByTagName("GroupType");
+    group = 0;
     if (nodes.count() > 0)
     {
         if (verb)
-            qDebug()<<"Found GroupType element:"<<nodes.at(0).toElement().text();
-        groupName = nodes.at(0).toElement().text();
+            qDebug()<<"-Found GroupType element:"<<nodes.at(0).toElement().text();
+
+        // Try to find the group in the group list
+        for (int count = 0; count < groupList.count(); count++)
+        {
+            if (groupList[count].type == nodes.at(0).toElement().text())
+                group = &(groupList.at(count));
+        }
+
+        if (group != 0)
+        {
+            if (verb)
+                qDebug()<<"--Found group with name"<<group->name;
+        }
+        else
+            qFatal("Failed to find group in group list");
     }
     else
         qFatal("Couldn't find GroupType element");
@@ -61,7 +76,7 @@ DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor, bool verbo
     for (unsigned int node = 0; node < nodes.length(); node++)
     {
         if (verb)
-            qDebug()<<"Processing Fmmu element"<<node;
+            qDebug()<<"-Processing Fmmu element"<<node;
         fmmus.append(fmmuType(nodes.at(node).toElement(),verb));
     }
 
@@ -70,7 +85,7 @@ DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor, bool verbo
     for (unsigned int node = 0; node < nodes.length(); node++)
     {
         if (verb)
-            qDebug()<<"Processing Sm element"<<node;
+            qDebug()<<"-Processing Sm element"<<node;
         syncManagers.append(syncManagerType(nodes.at(node).toElement(),verb));
     }
 
@@ -79,7 +94,7 @@ DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor, bool verbo
     for (unsigned int node = 0; node < nodes.length(); node++)
     {
         if (verb)
-            qDebug()<<"Processing RxPDO element"<<node;
+            qDebug()<<"-Processing RxPDO element"<<node;
         rxPDOs.append(pdoType(nodes.at(node).toElement(),verb));
     }
 
@@ -88,7 +103,7 @@ DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor, bool verbo
     for (unsigned int node = 0; node < nodes.length(); node++)
     {
         if (verb)
-            qDebug()<<"Processing TxPDO element"<<node;
+            qDebug()<<"-Processing TxPDO element"<<node;
         txPDOs.append(pdoType(nodes.at(node).toElement(),verb));
     }
 
@@ -98,7 +113,7 @@ DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor, bool verbo
     if (nodes.count()>0)
     {
         if (verb)
-            qDebug()<<"Found DC element";
+            qDebug()<<"-Found DC element";
         dcConf = new dcType(nodes.at(0).toElement(),verb);
     }
 
@@ -108,7 +123,7 @@ DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor, bool verbo
     if (nodes.count() > 0)
     {
         if (verb)
-            qDebug()<<"Found Eeprom element";
+            qDebug()<<"-Found Eeprom element";
         eeprom = new eepromType(nodes.at(0).toElement(),verb);
     }
     else
@@ -122,7 +137,7 @@ void DeviceType::parseType(QDomElement element) {
     if (!attributeStr.isEmpty())
     {
         if (verb)
-            qDebug()<<"Found ProductCode with value:"<<attributeStr;
+            qDebug()<<"--Found ProductCode with value:"<<attributeStr;
         // since it would appear the default hex encoding is #x0000 then we need to catch this our selves
         if ((attributeStr.at(0) == '#') && (attributeStr.at(1) == 'x'))
             productCode = attributeStr.remove(0,2).toInt(0,16);
@@ -136,7 +151,7 @@ void DeviceType::parseType(QDomElement element) {
     if (!attributeStr.isEmpty())
     {
         if (verb)
-            qDebug()<<"Found RevisionNo with value:"<<attributeStr;
+            qDebug()<<"--Found RevisionNo with value:"<<attributeStr;
         // since it would appear the default hex encoding is #x0000 then we need to catch this our selves
         if ((attributeStr.at(0) == '#') && (attributeStr.at(1) == 'x'))
             revisionNumber = attributeStr.remove(0,2).toInt(0,16);
@@ -150,7 +165,7 @@ void DeviceType::parseType(QDomElement element) {
     if (!attributeStr.isEmpty())
     {
         if (verb)
-            qDebug()<<"Found SerialNo with value:"<<attributeStr;
+            qDebug()<<"--Found SerialNo with value:"<<attributeStr;
         // since it would appear the default hex encoding is #x0000 then we need to catch this our selves
         if ((attributeStr.at(0) == '#') && (attributeStr.at(1) == 'x'))
             serialNumber = attributeStr.remove(0,2).toInt(0,16);
