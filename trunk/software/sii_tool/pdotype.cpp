@@ -10,7 +10,7 @@ pdoType::pdoType(QDomElement element, bool verbose)
     if (nodes.count() > 0)
     {
         if (verb)
-            qDebug()<<"Found Name element:"<<nodes.at(0).toElement().text();;
+            qDebug()<<"--Found Name element:"<<nodes.at(0).toElement().text();;
         name = nodes.at(0).toElement().text();
     }
 
@@ -19,7 +19,7 @@ pdoType::pdoType(QDomElement element, bool verbose)
     if (nodes.count() > 0)
     {
         if (verb)
-            qDebug()<<"Found Index element:"<<nodes.at(0).toElement().text();
+            qDebug()<<"--Found Index element:"<<nodes.at(0).toElement().text();
         QString indexStr = nodes.at(0).toElement().text();
         // since it would appear the default hex encoding is #x0000 then we need to catch this our selves
         if ((indexStr.at(0) == '#') && (indexStr.at(1) == 'x'))
@@ -35,7 +35,7 @@ pdoType::pdoType(QDomElement element, bool verbose)
     for (int entry = 0; entry < nodes.count(); entry++)
     {
         if (verb)
-            qDebug()<<"Parsing PDO entry"<<entry;
+            qDebug()<<"--Parsing PDO entry"<<entry;
         pdoEntries.append(EntryType(nodes.at(entry).toElement(),verb));
     }
 

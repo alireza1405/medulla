@@ -10,7 +10,7 @@ EntryType::EntryType(QDomElement element, bool verbose)
     if (nodes.count() > 0)
     {
         if (verb)
-            qDebug()<<"Found Name element:"<<nodes.at(0).toElement().text();;
+            qDebug()<<"---Found Name element:"<<nodes.at(0).toElement().text();;
         name = nodes.at(0).toElement().text();
     }
 
@@ -19,7 +19,7 @@ EntryType::EntryType(QDomElement element, bool verbose)
     if (nodes.count() > 0)
     {
         if (verb)
-            qDebug()<<"Found Index element:"<<nodes.at(0).toElement().text();
+            qDebug()<<"---Found Index element:"<<nodes.at(0).toElement().text();
         QString indexStr = nodes.at(0).toElement().text();
         // since it would appear the default hex encoding is #x0000 then we need to catch this our selves
         if ((indexStr.at(0) == '#') && (indexStr.at(1) == 'x'))
@@ -35,7 +35,7 @@ EntryType::EntryType(QDomElement element, bool verbose)
     if (nodes.count() > 0)
     {
         if (verb)
-            qDebug()<<"Found SubIndex element:"<<nodes.at(0).toElement().text();
+            qDebug()<<"---Found SubIndex element:"<<nodes.at(0).toElement().text();
         QString subIndexStr = nodes.at(0).toElement().text();
         // since it would appear the default hex encoding is #x0000 then we need to catch this our selves
         if ((subIndexStr.at(0) == '#') && (subIndexStr.at(1) == 'x'))
@@ -51,7 +51,7 @@ EntryType::EntryType(QDomElement element, bool verbose)
     if (nodes.count() > 0)
     {
         if (verb)
-            qDebug()<<"Found BitLen element:"<<nodes.at(0).toElement().text();
+            qDebug()<<"---Found BitLen element:"<<nodes.at(0).toElement().text();
         QString bitLenStr = nodes.at(0).toElement().text();
         // since it would appear the default hex encoding is #x0000 then we need to catch this our selves
         if ((bitLenStr.at(0) == '#') && (bitLenStr.at(1) == 'x'))
@@ -65,7 +65,7 @@ EntryType::EntryType(QDomElement element, bool verbose)
     if (nodes.count() > 0)
     {
         if (verb)
-            qDebug()<<"Found DataType element:"<<nodes.at(0).toElement().text();
+            qDebug()<<"---Found DataType element:"<<nodes.at(0).toElement().text();
         QString dataTypeStr = nodes.at(0).toElement().text();
 
         if ((dataTypeStr.compare("BOOL") == 0) || (dataTypeStr.compare("BIT") == 0))

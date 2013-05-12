@@ -23,7 +23,8 @@ SOURCES += main.cpp \
     entrytype.cpp \
     eepromtype.cpp \
     devicetype.cpp \
-    dctype.cpp
+    dctype.cpp \
+    grouptype.cpp
 
 HEADERS  += \
     syncmanagertype.h \
@@ -35,10 +36,11 @@ HEADERS  += \
     devicetype.h \
     dctype.h \
     vendortype.h \
-    sii_file.h
+    sii_file.h \
+    grouptype.h
 
 #FORMS    += \
 #    sii_tool.ui
 
 OTHER_FILES += \
-    testESI.xml
+    Medulla.xml

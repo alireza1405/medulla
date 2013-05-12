@@ -13,11 +13,12 @@
 #include "dctype.h"
 #include "eepromtype.h"
 #include "vendortype.h"
+#include "grouptype.h"
 
 class DeviceType
 {
 public:
-    DeviceType(QDomElement element, VendorType *deviceVendor, bool verbose);
+    DeviceType(QDomElement element, VendorType *deviceVendor, QList<GroupType> groupList, bool verbose);
 
     enum physicsType {
         notUsed = 0x00,
@@ -32,7 +33,7 @@ public:
     uint32_t revisionNumber;
     uint32_t serialNumber;
     uint16_t mailboxProtocol;
-    QString groupName;
+    const GroupType *group;
     QByteArray image;
     QString name;
     bool enableSDO;

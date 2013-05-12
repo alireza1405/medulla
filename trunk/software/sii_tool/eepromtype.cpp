@@ -11,7 +11,7 @@ eepromType::eepromType(QDomElement element, bool verbose)
     if (nodes.count() > 0)
     {
         if (verb)
-            qDebug()<<"Found ByteSize element:"<<nodes.at(0).toElement().text();;
+            qDebug()<<"--Found ByteSize element:"<<nodes.at(0).toElement().text();;
         size = nodes.at(0).toElement().text().toInt();
     }
 
@@ -21,7 +21,7 @@ eepromType::eepromType(QDomElement element, bool verbose)
     if (nodes.count() > 0)
     {
         if (verb)
-            qDebug()<< "Found ConfigData Element:"<<nodes.at(0).toElement().text();
+            qDebug()<< "--Found ConfigData Element:"<<nodes.at(0).toElement().text();
         QByteArray chars = nodes.at(0).toElement().text().toAscii();
 
         for (int i = 0; i < chars.size(); i+=2)
@@ -42,7 +42,7 @@ eepromType::eepromType(QDomElement element, bool verbose)
     if (nodes.count() > 0)
     {
         if (verb)
-            qDebug()<<"Found BootStrap element:"<<nodes.at(0).toElement().text();;
+            qDebug()<<"--Found BootStrap element:"<<nodes.at(0).toElement().text();;
         QByteArray chars = nodes.at(0).toElement().text().toAscii();
         bootStrap.clear();
 
@@ -63,7 +63,7 @@ eepromType::eepromType(QDomElement element, bool verbose)
     if (nodes.count() > 0)
     {
         if (verb)
-            qDebug()<<"Found Data element:"<<nodes.at(0).toElement().text();;
+            qDebug()<<"--Found Data element:"<<nodes.at(0).toElement().text();;
         QByteArray chars = nodes.at(0).toElement().text().toAscii();
         siiData.clear();
 

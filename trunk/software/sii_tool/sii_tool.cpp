@@ -11,7 +11,7 @@ sii_tool::sii_tool(QStringList args, QObject *parent) :
         verbose = false;
 
     parse_esi_file(args.at(1));
-    write_sii_file("/home/kit/medulla/software/sii_tool/test.bin",0);
+    //write_sii_file("/home/kit/medulla/software/sii_tool/test.bin",0);
     exit(0);
 }
 
@@ -38,14 +38,35 @@ void sii_tool::parse_esi_file(QString filename)
     file.close();
 
     if (verbose)
-        qDebug()<<"Parsing vendor element";
+        qDebug()<<"------Parsing vendor element------";
     vendor = new VendorType(doc.elementsByTagName("EtherCATInfo").at(0).toElement().elementsByTagName("Vendor").at(0).toElement(),verbose);
 
     if (verbose)
-        qDebug()<<"Parsing device elements";
-    QDomNodeList deviceElements = doc.elementsByTagName("EtherCATInfo").at(0).toElement().elementsByTagName("Device");
-    for (int count = 0; count < deviceElements.count(); count++)
-        devices.append(DeviceType(deviceElements.at(count).toElement(),vendor,verbose));
+        qDebug()<<"------Parsing group elements------";
+    groups.clear();
+    QDomNodeList groupsElements = doc.elementsByTagName("EtherCATInfo").at(0).toElement().elementsByTagName("Descriptions").at(0).toElement().elementsByTagName("Groups");
+    for (int groupsCounter = 0; groupsCounter < groupsElements.count(); groupsCounter++)
+    {
+        QDomNodeList groupElements = groupsElements.at(groupsCounter).toElement().elementsByTagName("Group");
+        for (int groupCounter = 0; groupCounter < groupElements.count(); groupCounter++) {
+            qDebug() << "Parsing group element:";
+            groups.append(GroupType(groupElements.at(groupCounter).toElement(),verbose));
+        }
+    }
+
+    if (verbose)
+        qDebug()<<"------Parsing device elements------";
+    devices.clear();
+    QDomNodeList devicesElements = doc.elementsByTagName("EtherCATInfo").at(0).toElement().elementsByTagName("Descriptions").at(0).toElement().elementsByTagName("Devices");
+    for (int devicesCounter = 0; devicesCounter < devicesElements.count(); devicesCounter++)
+    {
+        QDomNodeList deviceElements = devicesElements.at(devicesCounter).toElement().elementsByTagName("Device");
+        for (int deviceCounter = 0; deviceCounter < deviceElements.count(); deviceCounter++)
+        {
+            qDebug()<<"Parsing device element:";
+            devices.append(DeviceType(deviceElements.at(deviceCounter).toElement(),vendor,groups,verbose));
+        }
+    }
 }
 
 void sii_tool::write_sii_file(QString siiFilename, int index)
@@ -70,6 +91,8 @@ void sii_tool::write_sii_file(QString siiFilename, int index)
         siiFile.close();
         return;
     }
+
+    int baseAddr = 0;
 
     // If we are here, we need to actually assemnbly the sii file, start by making a byte array of the right size
     QByteArray siiData(device.eeprom->size,0);
@@ -97,6 +120,10 @@ void sii_tool::write_sii_file(QString siiFilename, int index)
     setInt16(siiData,EEPROM_SIZE,(device.eeprom->size*8)/1024 - 1); // Size stored in KBit-1 not number of bytes
     setInt16(siiData,VERSION,1);
 
+    // Start category section with strings section
+    baseAddr = SII_CATEGORIES;
+
+
     siiFile.write(siiData);
     siiFile.close();
 }
@@ -117,7 +144,6 @@ char sii_tool::computeCRC(QByteArray data, int length)
 
         for (unsigned long bitPos = 0x80; bitPos; bitPos>>=1)
         {
-            //qDebug("%x\n",bitPos);
             bit = crc & (1<<7);
             crc<<= 1;
             if (current_char & bitPos)
@@ -130,16 +156,26 @@ char sii_tool::computeCRC(QByteArray data, int length)
     return(crc);
 }
 
-void sii_tool::setInt16(QByteArray &data, int address, qint16 value)
+void sii_tool::setInt16(QByteArray &data, int address, uint16_t value)
 {
     data[address] = value & 0xFF;
     data[address+1] = (value>>8) & 0xFF;
 }
 
-void sii_tool::setInt32(QByteArray &data, int address, qint32 value)
+void sii_tool::setInt32(QByteArray &data, int address, uint16_t value)
 {
     data[address] = value & 0xFF;
     data[address+1] = (value>>8) & 0xFF;
     data[address+2] = (value>>16) & 0xFF;
     data[address+3] = (value>>24) & 0xFF;
+}
+
+QStringList sii_tool::assembleStringList(DeviceType device)
+{
+    // Generate list of device strings with same order as TwinCAT creates
+    QStringList strings;
+    strings.append(device.name);
+    //strings.append(device.groupName);
+    //TODO: Add parsing of image data
+    //strings.append();
 }
