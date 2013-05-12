@@ -7,6 +7,7 @@ eepromType::eepromType(QDomElement element, bool verbose)
 
     // Parse ByteSize element if there is one
     nodes = element.elementsByTagName("ByteSize");
+    size = 0;
     if (nodes.count() > 0)
     {
         if (verb)
@@ -15,6 +16,7 @@ eepromType::eepromType(QDomElement element, bool verbose)
     }
 
     // Parse ConfigData element if there is one
+    configData.clear();
     nodes = element.elementsByTagName("ConfigData");
     if (nodes.count() > 0)
     {
@@ -36,6 +38,7 @@ eepromType::eepromType(QDomElement element, bool verbose)
     }
 
     // Parse BootStrap element if there is one
+    bootStrap.clear();
     nodes = element.elementsByTagName("BootStrap");
     if (nodes.count() > 0)
     {
@@ -74,5 +77,8 @@ eepromType::eepromType(QDomElement element, bool verbose)
 
         definedData = true;
     }
+
+    if (!definedData && (size == 0))
+        qFatal("EEPROM size not specified."); // If full eeprom content not provided, then eeprom size must be given.
 
 }

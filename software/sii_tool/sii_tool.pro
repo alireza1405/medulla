@@ -34,7 +34,8 @@ HEADERS  += \
     eepromtype.h \
     devicetype.h \
     dctype.h \
-    vendortype.h
+    vendortype.h \
+    sii_file.h
 
 #FORMS    += \
 #    sii_tool.ui
