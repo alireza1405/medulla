@@ -27,7 +27,7 @@
 			</Entry>					
 			<Entry>
 				<Index>#x0003</Index>
-				<SubIndex>2</SubIndex>
+                                <SubIndex>2</SubIndex> 4
 				<BitLen>16</BitLen>
 				<Name>Motor Current</Name>
 				<DataType>INT</DataType>

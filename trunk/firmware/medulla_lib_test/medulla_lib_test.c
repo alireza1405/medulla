@@ -30,7 +30,7 @@ int main(void) {
 		while (!ad7193_read_complete(&adc));
 		ad7193_process_data(&adc);
 		printf("%d\n",adc_value);
-		_delay_ms(10);
+		_delay_ms(1);
 	}
 
 	while(1);

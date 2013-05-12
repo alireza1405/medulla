@@ -1,28 +1,29 @@
 #ifndef SII_TOOL_H
 #define SII_TOOL_H
 
-#include <QWidget>
+//#include <QWidget>
 #include <QDebug>
 #include <eepromtype.h>
 #include <vendortype.h>
 #include <entrytype.h>
 #include <pdotype.h>
 #include <devicetype.h>
+#include <QList>
 
-namespace Ui {
-class sii_tool;
-}
-
-class sii_tool : public QWidget
+class sii_tool : public QObject
 {
     Q_OBJECT
     
 public:
-    explicit sii_tool(QWidget *parent = 0);
+    explicit sii_tool(QObject *parent = 0);
     ~sii_tool();
     
 private:
-    Ui::sii_tool *ui;
+    QList<DeviceType> devices;
+    VendorType *vendor;  // Assuming there will only ever be one vendor per esi file.
+
+    void parse_esi_file(QString filename);
+    void write_sii_file(QString sii_file);
 };
 
 #endif // SII_TOOL_H

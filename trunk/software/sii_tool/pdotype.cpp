@@ -3,7 +3,7 @@
 pdoType::pdoType(QDomElement element)
 {
     QDomNodeList nodes;
-
+    qDebug()<<"--------------Starting New PDO-----------------";
     // Parse Name element if there is one
     nodes = element.elementsByTagName("Name");
     if (nodes.count() > 0)

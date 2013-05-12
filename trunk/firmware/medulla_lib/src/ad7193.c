@@ -73,11 +73,10 @@ ad7193_t ad7193_init(PORT_t *usart_port, USART_t *usart_reg, int16_t *destinatio
 	}
 	buffer->adc_pntr = &adc;
 	
-	_ad7193_reset(buffer);
+//	_ad7193_reset(buffer);
 	// Configure ADC register
-	_ad7193_write_reg(buffer,2,0x4);
-	_ad7193_write_reg(buffer,1,0x080004);
-
+//	_ad7193_write_reg(buffer,2,0x4);
+//	_ad7193_write_reg(buffer,1,0x080004);
 	adc.usart_reg->CTRLA = USART_RXCINTLVL_MED_gc;
 
 	return adc;
@@ -88,6 +87,7 @@ bool ad7193_start_read(ad7193_t *adc) {
 	if (adc->currently_reading)
 		return false; //Trying to start reading while read is already active, fail.
 	
+	adc->currently_reading = true;
 	// Set up the transmission buffer
 	_ad7193_buffer_t *buffer;
 	switch((intptr_t)(adc->usart_reg)) {
@@ -103,7 +103,7 @@ bool ad7193_start_read(ad7193_t *adc) {
 	}
 	buffer->adc_pntr = adc;
 	// Start reading
-	adc->currently_reading = true;
+	buffer->buffer_position = 0;
 	adc->usart_reg->DATA = 1<<6 | ((3 & 0b111)<<3);
 	return true;
 }
