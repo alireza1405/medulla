@@ -16,14 +16,13 @@ eepromType::eepromType(QDomElement element, bool verbose)
     }
 
     // Parse ConfigData element if there is one
-    configData.clear();
+    configData = QByteArray((int)14,(char)0);
     nodes = element.elementsByTagName("ConfigData");
     if (nodes.count() > 0)
     {
         if (verb)
             qDebug()<< "Found ConfigData Element:"<<nodes.at(0).toElement().text();
         QByteArray chars = nodes.at(0).toElement().text().toAscii();
-        configData.clear();
 
         for (int i = 0; i < chars.size(); i+=2)
         {
@@ -33,12 +32,12 @@ eepromType::eepromType(QDomElement element, bool verbose)
             char inchar;
             inchar  = (uint16_t)(((uint8_t)(chars[i]) <= 57) ? (chars[i]-48) : (chars[i] - 55))<<4;
             inchar |= (uint16_t)(((uint8_t)(chars[i+1]) <= 57) ? (chars[i+1]-48) : (chars[i+1] - 55));
-            configData.append(inchar);
+            configData[i/2] = inchar;
         }
     }
 
     // Parse BootStrap element if there is one
-    bootStrap.clear();
+    bootStrap = QByteArray((int)8,(char)0);
     nodes = element.elementsByTagName("BootStrap");
     if (nodes.count() > 0)
     {
@@ -54,11 +53,12 @@ eepromType::eepromType(QDomElement element, bool verbose)
             char inchar;
             inchar  = (uint16_t)(((uint8_t)(chars[i]) <= 57) ? (chars[i]-48) : (chars[i] - 55))<<4;
             inchar |= (uint16_t)(((uint8_t)(chars[i+1]) <= 57) ? (chars[i+1]-48) : (chars[i+1] - 55));
-            bootStrap.append(inchar);
+            bootStrap[i/2] = inchar;
         }
     }
 
     // Check for a data element, if there is one, then knock out the whole data vector and replace it
+    definedData = false;
     nodes = element.elementsByTagName("Data");
     if (nodes.count() > 0)
     {

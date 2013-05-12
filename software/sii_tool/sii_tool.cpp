@@ -11,6 +11,7 @@ sii_tool::sii_tool(QStringList args, QObject *parent) :
         verbose = false;
 
     parse_esi_file(args.at(1));
+    write_sii_file("/home/kit/medulla/software/sii_tool/test.bin",0);
     exit(0);
 }
 
@@ -49,6 +50,8 @@ void sii_tool::parse_esi_file(QString filename)
 
 void sii_tool::write_sii_file(QString siiFilename, int index)
 {
+    qDebug() << "Writing SII file";
+
     if (index >= devices.size())
     {
         qDebug()<<"Invalid device index";
@@ -58,13 +61,12 @@ void sii_tool::write_sii_file(QString siiFilename, int index)
     DeviceType device = devices.at(0);
 
     QFile siiFile(siiFilename);
-    if (!siiFile.open(QIODevice::WriteOnly)) {
+    if (!siiFile.open(QIODevice::ReadWrite)) {
         qFatal("Couldn't Open file.");
     }
 
     if (device.eeprom->definedData) {
         siiFile.write(device.eeprom->siiData); // Binary SII file was defined in ESI file, so just write it to a file.
-        while(siiFile.flush()); // Flush until everything is gone
         siiFile.close();
         return;
     }
@@ -72,8 +74,72 @@ void sii_tool::write_sii_file(QString siiFilename, int index)
     // If we are here, we need to actually assemnbly the sii file, start by making a byte array of the right size
     QByteArray siiData(device.eeprom->size,0);
 
+    // Populate configData section
+    siiData.replace(CONFIG_DATA,14,device.eeprom->configData.data(),14);
+
+    // Populate configData checksum
+    siiData[CONFIG_CHECK] = computeCRC(device.eeprom->configData,14);
+
+    // Populate general slave information
+    setInt32(siiData,VENDOR_ID,device.vendor->vendorID);
+    setInt32(siiData,PRODUCT_CODE,device.productCode);
+    setInt32(siiData,REV_NUMBER,device.revisionNumber);
+    setInt32(siiData,SERIAL_NUMBER,device.serialNumber);
+
+    // Populate bootstrap section
+    siiData.replace(BOOTSTRAP_DATA,8,device.eeprom->bootStrap.data(),8);
+
+    // Populate Mailbox configuration
+    // TODO: Figure out how to parse the rest of the mailbox values
+    setInt16(siiData,MBOX_PROTOCOL,device.mailboxProtocol);
+
+    // Populate footer of slave information section
+    setInt16(siiData,EEPROM_SIZE,(device.eeprom->size*8)/1024 - 1); // Size stored in KBit-1 not number of bytes
+    setInt16(siiData,VERSION,1);
 
     siiFile.write(siiData);
-    while(!siiFile.flush()); // Flush file until everything is written
     siiFile.close();
+}
+
+char sii_tool::computeCRC(QByteArray data, int length)
+{
+    // This function implements a CRC8 with initial value of 0xFF
+
+    char current_char;
+    char bit;
+    char crc = 0xFF;
+    for (int byte = 0; byte < length; byte++)
+    {
+        if (byte < data.length())
+            current_char = data.at(byte);
+        else
+            current_char = 0;
+
+        for (unsigned long bitPos = 0x80; bitPos; bitPos>>=1)
+        {
+            //qDebug("%x\n",bitPos);
+            bit = crc & (1<<7);
+            crc<<= 1;
+            if (current_char & bitPos)
+                bit^= (1<<7);
+            if (bit)
+                crc^= 0x07;
+        }
+    }
+
+    return(crc);
+}
+
+void sii_tool::setInt16(QByteArray &data, int address, qint16 value)
+{
+    data[address] = value & 0xFF;
+    data[address+1] = (value>>8) & 0xFF;
+}
+
+void sii_tool::setInt32(QByteArray &data, int address, qint32 value)
+{
+    data[address] = value & 0xFF;
+    data[address+1] = (value>>8) & 0xFF;
+    data[address+2] = (value>>16) & 0xFF;
+    data[address+3] = (value>>24) & 0xFF;
 }
