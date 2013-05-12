@@ -9,6 +9,7 @@
 #include <devicetype.h>
 #include <QList>
 #include <QStringList>
+#include <sii_file.h>
 
 class sii_tool : public QObject
 {
@@ -24,7 +25,7 @@ private:
     bool verbose;
 
     void parse_esi_file(QString filename);
-    void write_sii_file(QString sii_file);
+    void write_sii_file(QString siiFilename, int index);
 };
 
 #endif // SII_TOOL_H
