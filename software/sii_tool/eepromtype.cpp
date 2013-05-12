@@ -1,14 +1,16 @@
 #include "eepromtype.h"
 
-eepromType::eepromType(QDomElement element)
+eepromType::eepromType(QDomElement element, bool verbose)
 {
     QDomNodeList nodes; // Used to hold returns from elementsByTagName
+    verb = verbose;
 
     // Parse ByteSize element if there is one
     nodes = element.elementsByTagName("ByteSize");
     if (nodes.count() > 0)
     {
-        qDebug()<<"Found ByteSize element:"<<nodes.at(0).toElement().text();;
+        if (verb)
+            qDebug()<<"Found ByteSize element:"<<nodes.at(0).toElement().text();;
         size = nodes.at(0).toElement().text().toInt();
     }
 
@@ -16,7 +18,8 @@ eepromType::eepromType(QDomElement element)
     nodes = element.elementsByTagName("ConfigData");
     if (nodes.count() > 0)
     {
-        qDebug()<< "Found ConfigData Element:"<<nodes.at(0).toElement().text();
+        if (verb)
+            qDebug()<< "Found ConfigData Element:"<<nodes.at(0).toElement().text();
         QByteArray chars = nodes.at(0).toElement().text().toAscii();
         configData.clear();
 
@@ -36,7 +39,8 @@ eepromType::eepromType(QDomElement element)
     nodes = element.elementsByTagName("BootStrap");
     if (nodes.count() > 0)
     {
-        qDebug()<<"Found BootStrap element:"<<nodes.at(0).toElement().text();;
+        if (verb)
+            qDebug()<<"Found BootStrap element:"<<nodes.at(0).toElement().text();;
         QByteArray chars = nodes.at(0).toElement().text().toAscii();
         bootStrap.clear();
 
@@ -55,7 +59,8 @@ eepromType::eepromType(QDomElement element)
     nodes = element.elementsByTagName("Data");
     if (nodes.count() > 0)
     {
-        qDebug()<<"Found Data element:"<<nodes.at(0).toElement().text();;
+        if (verb)
+            qDebug()<<"Found Data element:"<<nodes.at(0).toElement().text();;
         QByteArray chars = nodes.at(0).toElement().text().toAscii();
         siiData.clear();
 

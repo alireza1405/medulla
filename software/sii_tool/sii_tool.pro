@@ -33,7 +33,8 @@ HEADERS  += \
     entrytype.h \
     eepromtype.h \
     devicetype.h \
-    dctype.h
+    dctype.h \
+    vendortype.h
 
 #FORMS    += \
 #    sii_tool.ui

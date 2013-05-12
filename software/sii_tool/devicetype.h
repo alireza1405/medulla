@@ -17,7 +17,7 @@
 class DeviceType
 {
 public:
-    DeviceType(QDomElement element, VendorType *deviceVendor);
+    DeviceType(QDomElement element, VendorType *deviceVendor, bool verbose);
 
     enum physicsType {
         notUsed = 0x00,
@@ -54,6 +54,9 @@ public:
     dcType *dcConf;
     eepromType *eeprom;
     VendorType *vendor;
+
+private:
+    bool verb;
 };
 
 #endif // DEVICETYPE_H

@@ -10,7 +10,7 @@
 class pdoType
 {
 public:
-    pdoType(QDomElement element);
+    pdoType(QDomElement element, bool verbose);
 
     uint16_t index;
     uint8_t syncManager;
@@ -20,6 +20,9 @@ public:
     bool mandatory;
 
     QList<EntryType> pdoEntries;
+
+private:
+    bool verb;
 };
 
 #endif // PDOTYPE_H

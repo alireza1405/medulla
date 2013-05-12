@@ -1,7 +1,8 @@
 #include "dctype.h"
 
-dcType::dcType(QDomElement element)
+dcType::dcType(QDomElement element, bool verbose)
 {
+    verb = verbose;
     QDomElement opMode;
     QDomNodeList nodes;
 
@@ -9,12 +10,15 @@ dcType::dcType(QDomElement element)
     nodes = element.elementsByTagName("OpMode");
     if (nodes.count() > 0)
     {
-        qDebug()<<"Found opMode Element, using first (default) element";
+        if (verb)
+            qDebug()<<"Found opMode Element, using first (default) element";
+
         opMode = nodes.at(0).toElement();
     }
     else
     {
-        qDebug()<<"No opMode element found, giving up";
+        qDebug()<<"No opMode element found, ignoring dcType element";
+
         return;
     }
 
@@ -22,14 +26,17 @@ dcType::dcType(QDomElement element)
     nodes = opMode.elementsByTagName("Name");
     if (nodes.count() > 0)
     {
-        qDebug()<<"Found Name element:"<<nodes.at(0).toElement().text();
+        if (verb)
+            qDebug()<<"Found Name element:"<<nodes.at(0).toElement().text();
+
         DCSyncName = nodes.at(0).toElement().text();
     }
 
     nodes = opMode.elementsByTagName("CycleTimeSync0");
     if (nodes.count() > 0)
     {
-        qDebug()<<"Found CycleTimeSync0 element:"<<nodes.at(0).toElement().text();
+        if (verb)
+            qDebug()<<"Found CycleTimeSync0 element:"<<nodes.at(0).toElement().text();
         QString indexStr = nodes.at(0).toElement().text();
         if ((indexStr.at(0) == '#') && (indexStr.at(1) == 'x'))
             cycleTimeSync0 = indexStr.remove(0,2).toInt(0,16);
@@ -40,7 +47,8 @@ dcType::dcType(QDomElement element)
     nodes = opMode.elementsByTagName("ShiftTimeSync0");
     if (nodes.count() > 0)
     {
-        qDebug()<<"Found ShiftTimeSync0 element:"<<nodes.at(0).toElement().text();
+        if (verb)
+            qDebug()<<"Found ShiftTimeSync0 element:"<<nodes.at(0).toElement().text();
         QString indexStr = nodes.at(0).toElement().text();
         if ((indexStr.at(0) == '#') && (indexStr.at(1) == 'x'))
             shiftTimeSync0 = indexStr.remove(0,2).toInt(0,16);
@@ -50,7 +58,8 @@ dcType::dcType(QDomElement element)
     	nodes = opMode.elementsByTagName("CycleTimeSync0Factor");
     	if (nodes.count() > 0)
     	{
-    	    qDebug()<<"Found CycleTimeSync0Factor element:"<<nodes.at(0).toElement().text();
+            if (verb)
+                qDebug()<<"Found CycleTimeSync0Factor element:"<<nodes.at(0).toElement().text();
     	    QString indexStr = nodes.at(0).toElement().text();
     	    if ((indexStr.at(0) == '#') && (indexStr.at(1) == 'x'))
     	        cycleTimeSync0Factor = indexStr.remove(0,2).toInt(0,16);
@@ -62,7 +71,8 @@ dcType::dcType(QDomElement element)
     nodes = opMode.elementsByTagName("ShiftTimeSync1");
     if (nodes.count() > 0)
     {
-        qDebug()<<"Found ShiftTimeSync1 element:"<<nodes.at(0).toElement().text();
+        if (verb)
+            qDebug()<<"Found ShiftTimeSync1 element:"<<nodes.at(0).toElement().text();
         QString indexStr = nodes.at(0).toElement().text();
         if ((indexStr.at(0) == '#') && (indexStr.at(1) == 'x'))
             shiftTimeSync1 = indexStr.remove(0,2).toInt(0,16);
@@ -72,7 +82,8 @@ dcType::dcType(QDomElement element)
         nodes = opMode.elementsByTagName("CycleTimeSync1Factor");
     	if (nodes.count() > 0)
     	{
-    	    qDebug()<<"Found CycleTimeSync1Factor element:"<<nodes.at(0).toElement().text();
+            if (verb)
+                qDebug()<<"Found CycleTimeSync1Factor element:"<<nodes.at(0).toElement().text();
     	    QString indexStr = nodes.at(0).toElement().text();
     	    if ((indexStr.at(0) == '#') && (indexStr.at(1) == 'x'))
     	        cycleTimeSync1Factor = indexStr.remove(0,2).toInt(0,16);

@@ -10,7 +10,7 @@
 class eepromType
 {
 public:
-    eepromType(QDomElement element);
+    eepromType(QDomElement element, bool verbose);
 
     uint16_t size; // Size of eeprom in bytes
     QByteArray configData; // Configuration data
@@ -18,6 +18,9 @@ public:
     QByteArray eepromData; // Full eeprom data stored here if it's in the ESI file.
     QByteArray siiData;
     bool definedData;
+
+private:
+    bool verb;
 };
 
 #endif // EEPROMTYPE_H

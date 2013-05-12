@@ -1,14 +1,16 @@
 #include "entrytype.h"
 
-EntryType::EntryType(QDomElement element)
+EntryType::EntryType(QDomElement element, bool verbose)
 {
     QDomNodeList nodes;
+    verb = verbose;
 
     // Parse Name element if there is one
     nodes = element.elementsByTagName("Name");
     if (nodes.count() > 0)
     {
-        qDebug()<<"Found Name element:"<<nodes.at(0).toElement().text();;
+        if (verb)
+            qDebug()<<"Found Name element:"<<nodes.at(0).toElement().text();;
         name = nodes.at(0).toElement().text();
     }
 
@@ -16,7 +18,8 @@ EntryType::EntryType(QDomElement element)
     nodes = element.elementsByTagName("Index");
     if (nodes.count() > 0)
     {
-        qDebug()<<"Found Index element:"<<nodes.at(0).toElement().text();
+        if (verb)
+            qDebug()<<"Found Index element:"<<nodes.at(0).toElement().text();
         QString indexStr = nodes.at(0).toElement().text();
         // since it would appear the default hex encoding is #x0000 then we need to catch this our selves
         if ((indexStr.at(0) == '#') && (indexStr.at(1) == 'x'))
@@ -25,13 +28,14 @@ EntryType::EntryType(QDomElement element)
             index = indexStr.toInt(0,0);
     }
     else
-        qErrnoWarning("No index found");
+        qFatal("No index found");
 
     // Parse SubIndex element if there is one
     nodes = element.elementsByTagName("SubIndex");
     if (nodes.count() > 0)
     {
-        qDebug()<<"Found SubIndex element:"<<nodes.at(0).toElement().text();
+        if (verb)
+            qDebug()<<"Found SubIndex element:"<<nodes.at(0).toElement().text();
         QString subIndexStr = nodes.at(0).toElement().text();
         // since it would appear the default hex encoding is #x0000 then we need to catch this our selves
         if ((subIndexStr.at(0) == '#') && (subIndexStr.at(1) == 'x'))
@@ -40,13 +44,14 @@ EntryType::EntryType(QDomElement element)
             subIndex = subIndexStr.toInt(0,0);
     }
     else
-        qErrnoWarning("No sub indx found");
+        qFatal("No sub indx found");
 
     // Parse BitLen element if there is one
     nodes = element.elementsByTagName("BitLen");
     if (nodes.count() > 0)
     {
-        qDebug()<<"Found BitLen element:"<<nodes.at(0).toElement().text();
+        if (verb)
+            qDebug()<<"Found BitLen element:"<<nodes.at(0).toElement().text();
         QString bitLenStr = nodes.at(0).toElement().text();
         // since it would appear the default hex encoding is #x0000 then we need to catch this our selves
         if ((bitLenStr.at(0) == '#') && (bitLenStr.at(1) == 'x'))
@@ -59,7 +64,8 @@ EntryType::EntryType(QDomElement element)
     nodes = element.elementsByTagName("DataType");
     if (nodes.count() > 0)
     {
-        qDebug()<<"Found DataType element:"<<nodes.at(0).toElement().text();
+        if (verb)
+            qDebug()<<"Found DataType element:"<<nodes.at(0).toElement().text();
         QString dataTypeStr = nodes.at(0).toElement().text();
 
         if ((dataTypeStr.compare("BOOL") == 0) || (dataTypeStr.compare("BIT") == 0))
@@ -218,6 +224,6 @@ EntryType::EntryType(QDomElement element)
             bitLen = 64;
         }
         else
-            qErrnoWarning("Unknown data type");
+            qFatal("Unknown data type");
     }
 }
