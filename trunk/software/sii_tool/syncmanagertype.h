@@ -7,7 +7,7 @@
 class syncManagerType
 {
 public:
-    syncManagerType(QDomElement element);
+    syncManagerType(QDomElement element, bool verbose);
 
     enum smType_t : uint8_t {
         unused = 0x00,
@@ -23,6 +23,9 @@ public:
     bool virtualSM;
     bool opOnly;
     smType_t smType;
+
+private:
+    bool verb;
 };
 
 #endif // SYNCMANAGERTYPE_H

@@ -8,10 +8,13 @@
 class VendorType
 {
 public:
-    VendorType(QDomElement element);
+    VendorType(QDomElement element, bool verbose);
 
     uint32_t vendorID;
     QString name;
+
+private:
+    bool verb;
 };
 
 #endif // VENDORTYPE_H

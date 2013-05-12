@@ -1,7 +1,8 @@
 #include "devicetype.h"
 
-DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor)
+DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor, bool verbose)
 {
+    verb = verbose;
     vendor = deviceVendor;
     // Parse Physics attribute, not technically documented, but it seems to work and be used
     QString attributeStr;
@@ -19,12 +20,14 @@ DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor)
                 break;
             if ((attributeStr.at(i) == 'Y') || (attributeStr.at(i) == 'H')) {
                 physics[i] = MII;
-                qDebug()<<"Port"<<i<<"using MII physics.";
+                if (verb)
+                    qDebug()<<"Port"<<i<<"using MII physics.";
             }
             else if (attributeStr.at(i) == 'K')
             {
                 physics[i] = EBUS;
-                qDebug()<<"Port"<<i<<"using EBUS physics.";
+                if (verb)
+                    qDebug()<<"Port"<<i<<"using EBUS physics.";
             }
         }
     }
@@ -35,52 +38,58 @@ DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor)
     nodes = element.elementsByTagName("Type");
     if (nodes.count() > 0)
     {
-        qDebug()<<"Found Type element:"<<nodes.at(0).toElement().text();
+        if (verb)
+            qDebug()<<"Found Type element:"<<nodes.at(0).toElement().text();
         parseType(nodes.at(0).toElement());
     }
     else
-        qErrnoWarning("Couldn't find Type element");
+        qFatal("Couldn't find Type element");
 
     // Parse GroupType element
     nodes = element.elementsByTagName("GroupType");
     if (nodes.count() > 0)
     {
-        qDebug()<<"Found GroupType element:"<<nodes.at(0).toElement().text();
+        if (verb)
+            qDebug()<<"Found GroupType element:"<<nodes.at(0).toElement().text();
         groupName = nodes.at(0).toElement().text();
     }
     else
-        qErrnoWarning("Couldn't find GroupType element");
+        qFatal("Couldn't find GroupType element");
 
     // Parse Fmmu elements
     nodes = element.elementsByTagName("Fmmu");
     for (unsigned int node = 0; node < nodes.length(); node++)
     {
-        qDebug()<<"Processing Fmmu element"<<node;
-        fmmus.append(fmmuType(nodes.at(node).toElement()));
+        if (verb)
+            qDebug()<<"Processing Fmmu element"<<node;
+        fmmus.append(fmmuType(nodes.at(node).toElement(),verb));
     }
 
     // Parse Sm elements
     nodes = element.elementsByTagName("Sm");
     for (unsigned int node = 0; node < nodes.length(); node++)
     {
-        qDebug()<<"Processing Sm element"<<node;
-        syncManagers.append(syncManagerType(nodes.at(node).toElement()));
+        if (verb)
+            qDebug()<<"Processing Sm element"<<node;
+        syncManagers.append(syncManagerType(nodes.at(node).toElement(),verb));
     }
 
     // Parse RxPDO element
     nodes = element.elementsByTagName("RxPdo");
     for (unsigned int node = 0; node < nodes.length(); node++)
     {
-        qDebug()<<"Processing RxPDO element"<<node;
-        rxPDOs.append(pdoType(nodes.at(node).toElement()));
+        if (verb)
+            qDebug()<<"Processing RxPDO element"<<node;
+        rxPDOs.append(pdoType(nodes.at(node).toElement(),verb));
     }
 
     // Parse TxPDO element
     nodes = element.elementsByTagName("TxPdo");
     for (unsigned int node = 0; node < nodes.length(); node++)
     {
-        qDebug()<<"Processing TxPDO element"<<node;
-        txPDOs.append(pdoType(nodes.at(node).toElement()));
+        if (verb)
+            qDebug()<<"Processing TxPDO element"<<node;
+        txPDOs.append(pdoType(nodes.at(node).toElement(),verb));
     }
 
     // Parse DC element if there is one
@@ -88,8 +97,9 @@ DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor)
     nodes = element.elementsByTagName("Dc");
     if (nodes.count()>0)
     {
-        qDebug()<<"Found DC element";
-        dcConf = new dcType(nodes.at(0).toElement());
+        if (verb)
+            qDebug()<<"Found DC element";
+        dcConf = new dcType(nodes.at(0).toElement(),verb);
     }
 
     // Parse EEPROM element
@@ -97,11 +107,12 @@ DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor)
     nodes = element.elementsByTagName("Eeprom");
     if (nodes.count() > 0)
     {
-        qDebug()<<"Found Eeprom element";
-        eeprom = new eepromType(nodes.at(0).toElement());
+        if (verb)
+            qDebug()<<"Found Eeprom element";
+        eeprom = new eepromType(nodes.at(0).toElement(),verb);
     }
     else
-        qErrnoWarning("Couldn't find GroupType element");
+        qFatal("Couldn't find EEPROM element");
 }
 
 void DeviceType::parseType(QDomElement element) {
@@ -110,7 +121,8 @@ void DeviceType::parseType(QDomElement element) {
     attributeStr = element.attribute("ProductCode");
     if (!attributeStr.isEmpty())
     {
-        qDebug()<<"Found ProductCode with value:"<<attributeStr;
+        if (verb)
+            qDebug()<<"Found ProductCode with value:"<<attributeStr;
         // since it would appear the default hex encoding is #x0000 then we need to catch this our selves
         if ((attributeStr.at(0) == '#') && (attributeStr.at(1) == 'x'))
             productCode = attributeStr.remove(0,2).toInt(0,16);
@@ -123,7 +135,8 @@ void DeviceType::parseType(QDomElement element) {
     attributeStr = element.attribute("RevisionNo");
     if (!attributeStr.isEmpty())
     {
-        qDebug()<<"Found RevisionNo with value:"<<attributeStr;
+        if (verb)
+            qDebug()<<"Found RevisionNo with value:"<<attributeStr;
         // since it would appear the default hex encoding is #x0000 then we need to catch this our selves
         if ((attributeStr.at(0) == '#') && (attributeStr.at(1) == 'x'))
             revisionNumber = attributeStr.remove(0,2).toInt(0,16);
@@ -136,7 +149,8 @@ void DeviceType::parseType(QDomElement element) {
     attributeStr = element.attribute("SerialNo");
     if (!attributeStr.isEmpty())
     {
-        qDebug()<<"Found SerialNo with value:"<<attributeStr;
+        if (verb)
+            qDebug()<<"Found SerialNo with value:"<<attributeStr;
         // since it would appear the default hex encoding is #x0000 then we need to catch this our selves
         if ((attributeStr.at(0) == '#') && (attributeStr.at(1) == 'x'))
             serialNumber = attributeStr.remove(0,2).toInt(0,16);

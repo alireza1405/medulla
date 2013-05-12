@@ -7,7 +7,7 @@
 class fmmuType
 {
 public:
-    fmmuType(QDomElement element);
+    fmmuType(QDomElement element, bool verbose);
 
     enum fmmuType_t : uint8_t {
         unused = 0x00,
@@ -17,6 +17,9 @@ public:
 
     fmmuType_t type;
     uint8_t sm;
+
+private:
+    bool verb;
 
 };
 
