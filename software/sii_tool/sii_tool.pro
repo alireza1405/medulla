@@ -1,18 +1,18 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2013-01-20T12:50:21
+# Project created by QtCreator 2013-05-11T22:16:31
 #
 #-------------------------------------------------
 
-QT       += core gui xml
+QT       += core xml
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+# greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+CONFIG   += console
+QT       -= gui
 
 TARGET = sii_tool
 TEMPLATE = app
-
 QMAKE_CXXFLAGS += -std=gnu++11
-
 
 SOURCES += main.cpp \
     vendortype.cpp \
@@ -26,7 +26,6 @@ SOURCES += main.cpp \
     dctype.cpp
 
 HEADERS  += \
-    vendortype.h \
     syncmanagertype.h \
     sii_tool.h \
     pdotype.h \
@@ -36,8 +35,8 @@ HEADERS  += \
     devicetype.h \
     dctype.h
 
-FORMS    += \
-    sii_tool.ui
+#FORMS    += \
+#    sii_tool.ui
 
 OTHER_FILES += \
     testESI.xml
