@@ -64,11 +64,16 @@ void sii_tool::write_sii_file(QString siiFilename, int index)
 
     if (device.eeprom->definedData) {
         siiFile.write(device.eeprom->siiData); // Binary SII file was defined in ESI file, so just write it to a file.
-        siiFile.flush();
+        while(siiFile.flush()); // Flush until everything is gone
         siiFile.close();
         return;
     }
 
     // If we are here, we need to actually assemnbly the sii file, start by making a byte array of the right size
     QByteArray siiData(device.eeprom->size,0);
+
+
+    siiFile.write(siiData);
+    while(!siiFile.flush()); // Flush file until everything is written
+    siiFile.close();
 }
