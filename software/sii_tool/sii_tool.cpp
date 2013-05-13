@@ -1,17 +1,9 @@
 #include "sii_tool.h"
 
-sii_tool::sii_tool(QStringList args, QObject *parent) :
-    QObject(parent)
+sii_tool::sii_tool(bool verb)
 {
     vendor = 0;
-    if (args.indexOf("-v") >= 0)
-        verbose = true;
-    else
-        verbose = false;
-
-    parse_esi_file(args.at(1));
-    write_sii_file("/home/kit/medulla/software/sii_tool/test.bin",0);
-    exit(0);
+    verbose = verb;
 }
 
 sii_tool::~sii_tool()
@@ -80,7 +72,7 @@ void sii_tool::write_sii_file(QString siiFilename, int index)
         return;
     }
 
-    DeviceType device = devices.at(0);
+    DeviceType device = devices.at(index);
 
     QFile siiFile(siiFilename);
     if (!siiFile.open(QIODevice::ReadWrite)) {
@@ -124,7 +116,7 @@ void sii_tool::write_sii_file(QString siiFilename, int index)
 
     // Start category section with strings section
     baseAddr = SII_CATEGORIES;
-    int stringsPosAddr = baseAddr+4;
+    int stringsPosAddr = baseAddr+CAT_DATA_OFF;
 
     assembleStringList(device,strings);
     setInt16(siiData,baseAddr,CAT_TYPE_STRINGS);
@@ -146,8 +138,8 @@ void sii_tool::write_sii_file(QString siiFilename, int index)
 
     // Write General Category
     setInt16(siiData,baseAddr,CAT_TYPE_GENERAL);
-    setInt16(siiData,baseAddr+2,GENERAL_CAT_LENGTH/2); // Divide by two for word length
-    baseAddr += 4; // Point baseAddr to beginning of category data.
+    setInt16(siiData,baseAddr+CAT_SIZE_OFF,GENERAL_CAT_LENGTH/2); // Divide by two for word length
+    baseAddr += CAT_DATA_OFF; // Point baseAddr to beginning of category data.
 
     if (groups[device.groupId].type.length())
         siiData[baseAddr+GROUP_TYPE_INDEX_OFF] = strings.indexOf(groups[device.groupId].type) + 1;
@@ -193,13 +185,128 @@ void sii_tool::write_sii_file(QString siiFilename, int index)
 
     // Populate FMMU category
     setInt16(siiData,baseAddr,CAT_TYPE_FMMU);
-    setInt16(siiData,baseAddr+2,device.fmmus.length()/2);
-    baseAddr += 4;
+    setInt16(siiData,baseAddr+CAT_SIZE_OFF,device.fmmus.length()/2);
+    baseAddr += CAT_DATA_OFF;
     for (int count = 0; count < device.fmmus.length(); count++)
         siiData[baseAddr++] = (char)(device.fmmus.at(count).type);
 
     // Populate Sync Manager category
+    setInt16(siiData,baseAddr,CAT_TYPE_SYNCM);
+    setInt16(siiData,baseAddr+CAT_SIZE_OFF,device.syncManagers.count()*SYNCM_CAT_LEN/2);
+    baseAddr += CAT_DATA_OFF;
 
+    for (int count = 0; count < device.syncManagers.count(); count++)
+    {
+        setInt16(siiData,baseAddr+SYNCM_PHY_ADDR_OFF,device.syncManagers.at(count).phyStartAddr);
+        setInt16(siiData,baseAddr+SYNCM_LENGTH_OFF,device.syncManagers.at(count).length);
+        siiData[baseAddr+SYNCM_CTRL_REG_OFF] = device.syncManagers.at(count).controlRegister;
+
+        siiData[baseAddr+SYNCM_ENABLE_OFF] = (device.syncManagers.at(count).enable    ? (1<<0) : 0) |
+                                             (device.syncManagers.at(count).virtualSM ? (1<<2) : 0) |
+                                             (device.syncManagers.at(count).opOnly    ? (1<<3) : 0) ;
+
+        siiData[baseAddr+SYNCM_TYPE_OFF] = device.syncManagers.at(count).smType;
+        baseAddr += SYNCM_CAT_LEN;
+    }
+
+    // Populate secondary FMMU category
+    //TODO: Figure out what the rest of the bits do
+    setInt16(siiData,baseAddr,CAT_TYPE_FMMU_ALT);
+    setInt16(siiData,baseAddr+CAT_SIZE_OFF,device.fmmus.count()*2);
+    baseAddr += CAT_DATA_OFF;
+
+    for (int count = 0; count < device.fmmus.count(); count++)
+    {
+        siiData[baseAddr++] = 0b11111000 | (device.fmmus.at(count).suAssigned ? (1<<2) : 0) | (device.fmmus.at(count).smAssigned ? (1<<1) : 0);
+        siiData[baseAddr++] = 0xFF;
+        siiData[baseAddr++] = (char)device.fmmus.at(count).sm;
+        siiData[baseAddr++] = (char)device.fmmus.at(count).su;
+    }
+
+    // Populate TX PDO entries
+    setInt16(siiData,baseAddr,CAT_TYPE_TXPDO);
+    int PDOEntryAddr = baseAddr+CAT_DATA_OFF;
+
+    for (int pdoCount = 0; pdoCount < device.txPDOs.count(); pdoCount++)
+    {
+        setInt16(siiData,PDOEntryAddr,device.txPDOs[pdoCount].index);
+        PDOEntryAddr += 2;
+        siiData[PDOEntryAddr++] = device.txPDOs[pdoCount].pdoEntries.count();
+        siiData[PDOEntryAddr++] = device.txPDOs[pdoCount].syncManager;
+        PDOEntryAddr++; // TODO: Figure out what the Synchronization byte is supposed to be for
+        if (device.txPDOs[pdoCount].name.length())
+            siiData[PDOEntryAddr++] = strings.indexOf(device.txPDOs[pdoCount].name) + 1;
+        setInt16(siiData,PDOEntryAddr, (device.txPDOs[pdoCount].mandatory ? (1<<0) : 0) |
+                                       (device.txPDOs[pdoCount].fixed     ? (1<<4) : 0));
+        PDOEntryAddr+=2;
+
+        for (int entryCount = 0; entryCount < device.txPDOs[pdoCount].pdoEntries.count(); entryCount++)
+        {
+            setInt16(siiData,PDOEntryAddr,device.txPDOs[pdoCount].pdoEntries[entryCount].index);
+            PDOEntryAddr += 2;
+            siiData[PDOEntryAddr++] = device.txPDOs[pdoCount].pdoEntries[entryCount].subIndex;
+            if (device.txPDOs[pdoCount].pdoEntries[entryCount].name.length())
+                siiData[PDOEntryAddr++] = strings.indexOf(device.txPDOs[pdoCount].pdoEntries[entryCount].name) + 1;
+            siiData[PDOEntryAddr++] = device.txPDOs[pdoCount].pdoEntries[entryCount].typeIndex;
+            siiData[PDOEntryAddr++] = device.txPDOs[pdoCount].pdoEntries[entryCount].bitLen;
+            PDOEntryAddr += 2; // Increment past unused flags;
+        }
+    }
+
+    setInt16(siiData,baseAddr+CAT_SIZE_OFF,(PDOEntryAddr - CAT_DATA_OFF - baseAddr)/2);
+    baseAddr = PDOEntryAddr;
+
+    // Write RX PDO entries
+    setInt16(siiData,baseAddr,CAT_TYPE_RXPDO);
+    PDOEntryAddr = baseAddr+CAT_DATA_OFF;
+
+    for (int pdoCount = 0; pdoCount < device.rxPDOs.count(); pdoCount++)
+    {
+        setInt16(siiData,PDOEntryAddr,device.rxPDOs[pdoCount].index);
+        PDOEntryAddr += 2;
+        siiData[PDOEntryAddr++] = device.rxPDOs[pdoCount].pdoEntries.count();
+        siiData[PDOEntryAddr++] = device.rxPDOs[pdoCount].syncManager;
+        PDOEntryAddr++; // TODO: Figure out what the Synchronization byte is supposed to be for
+        if (device.rxPDOs[pdoCount].name.length())
+            siiData[PDOEntryAddr++] = strings.indexOf(device.rxPDOs[pdoCount].name) + 1;
+        setInt16(siiData,PDOEntryAddr, (device.rxPDOs[pdoCount].mandatory ? (1<<0) : 0) |
+                                       (device.rxPDOs[pdoCount].fixed     ? (1<<4) : 0));
+        PDOEntryAddr+=2;
+
+        for (int entryCount = 0; entryCount < device.rxPDOs[pdoCount].pdoEntries.count(); entryCount++)
+        {
+            setInt16(siiData,PDOEntryAddr,device.rxPDOs[pdoCount].pdoEntries[entryCount].index);
+            PDOEntryAddr += 2;
+            siiData[PDOEntryAddr++] = device.rxPDOs[pdoCount].pdoEntries[entryCount].subIndex;
+            if (device.rxPDOs[pdoCount].pdoEntries[entryCount].name.length())
+                siiData[PDOEntryAddr++] = strings.indexOf(device.rxPDOs[pdoCount].pdoEntries[entryCount].name) + 1;
+            siiData[PDOEntryAddr++] = device.rxPDOs[pdoCount].pdoEntries[entryCount].typeIndex;
+            siiData[PDOEntryAddr++] = device.rxPDOs[pdoCount].pdoEntries[entryCount].bitLen;
+            PDOEntryAddr += 2; // Increment past unused flags;
+        }
+    }
+
+    setInt16(siiData,baseAddr+CAT_SIZE_OFF,(PDOEntryAddr - CAT_DATA_OFF - baseAddr)/2);
+    baseAddr = PDOEntryAddr;
+
+    // Write DC Category
+    setInt16(siiData,baseAddr,CAT_TYPE_DC);
+    setInt16(siiData,baseAddr+CAT_SIZE_OFF,DC_CAT_LENGTH/2);
+    baseAddr += CAT_DATA_OFF;
+
+    setInt32(siiData,baseAddr+DC_CYCLE_SYNC0_OFF,device.dcConf->cycleTimeSync0);
+    setInt32(siiData,baseAddr+DC_SHIFT_SYNC0_OFF,device.dcConf->shiftTimeSync0);
+    setInt32(siiData,baseAddr+DC_SHIFT_SYNC1_OFF,device.dcConf->shiftTimeSync1);
+    setInt16(siiData,baseAddr+DC_CYCLE_SYNC1_FACTOR_OFF,device.dcConf->cycleTimeSync1Factor);
+    setInt16(siiData,baseAddr+DC_ASSIGN_ACTIVATE_OFF,device.dcConf->assignActivateWord);
+    setInt16(siiData,baseAddr+DC_CYCLE_SYNC0_FACTOR_OFF,device.dcConf->cycleTimeSync0Factor);
+    if (device.dcConf->DCSyncName.length())
+        siiData[baseAddr+DC_SYNC_NAME_INDEX_OFF] = strings.indexOf(device.dcConf->DCSyncName) + 1;
+    baseAddr += DC_CAT_LENGTH;
+
+    // Fill rest of eeprom with 0xFF
+    for(int count = baseAddr; count < siiData.length(); count++)
+        siiData[count] = 0xFF;
 
     siiFile.write(siiData);
     siiFile.close();
@@ -239,7 +346,7 @@ void sii_tool::setInt16(QByteArray &data, int address, uint16_t value)
     data[address+1] = (value>>8) & 0xFF;
 }
 
-void sii_tool::setInt32(QByteArray &data, int address, uint16_t value)
+void sii_tool::setInt32(QByteArray &data, int address, uint32_t value)
 {
     data[address] = value & 0xFF;
     data[address+1] = (value>>8) & 0xFF;

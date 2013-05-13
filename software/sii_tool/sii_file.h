@@ -37,6 +37,7 @@
 #define CAT_TYPE_GENERAL                    30      // Generate slave information category
 #define CAT_TYPE_FMMU                       40
 #define CAT_TYPE_SYNCM                      41
+#define CAT_TYPE_FMMU_ALT                   42
 #define CAT_TYPE_TXPDO                      50
 #define CAT_TYPE_RXPDO                      51
 #define CAT_TYPE_DC                         60
@@ -62,7 +63,7 @@
 #define SYNCM_LENGTH_OFF              (0x0002)
 #define SYNCM_CTRL_REG_OFF            (0x0004)
 #define SYNCM_ENABLE_OFF              (0x0006)
-#define SYNCN_TYPE_OFF                (0x0007)
+#define SYNCM_TYPE_OFF                (0x0007)
 
 // PDO Category strucure, repeated for each PDO
 #define PDO_CAT_FIXED_LEN                  (8)      // Length of fixed section of PDO category in addition to size of entry list

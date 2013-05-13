@@ -111,6 +111,17 @@ DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor, QList<Grou
         syncManagers.append(syncManagerType(nodes.at(node).toElement(),verb));
     }
 
+    // Handle misplaced OpOnly elements
+    for (int count = 0; count < fmmus.count(); count++)
+    {
+        if (fmmus[count].smAssigned && (fmmus[count].sm < syncManagers.count()) && fmmus[count].opOnly)
+        {
+            qDebug()<< "Found obsolete use of OpOnly attribute of FMMU Type";
+            if (syncManagers[fmmus[count].sm].smType != syncManagerType::processDataIn) // For some reason TwinCAT does this
+                syncManagers[fmmus[count].sm].opOnly = true;
+        }
+    }
+
     // Parse RxPDO element
     nodes = element.elementsByTagName("RxPdo");
     for (unsigned int node = 0; node < nodes.length(); node++)
@@ -155,6 +166,7 @@ DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor, QList<Grou
 void DeviceType::parseType(QDomElement element) {
     QString attributeStr;
 
+    attributeStr.clear();
     attributeStr = element.attribute("ProductCode");
     if (!attributeStr.isEmpty())
     {
@@ -169,6 +181,7 @@ void DeviceType::parseType(QDomElement element) {
     else
         productCode = 0;
 
+    attributeStr.clear();
     attributeStr = element.attribute("RevisionNo");
     if (!attributeStr.isEmpty())
     {
@@ -183,6 +196,7 @@ void DeviceType::parseType(QDomElement element) {
     else
         revisionNumber = 0;
 
+    attributeStr.clear();
     attributeStr = element.attribute("SerialNo");
     if (!attributeStr.isEmpty())
     {
