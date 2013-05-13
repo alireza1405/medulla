@@ -44,7 +44,7 @@
 
 // General Category Structure
 #define GENERAL_CAT_LENGTH                (32)
-#define GROUP_STR_INDEX_OFF           (0x0000)      // Offset of group string index in category (Index into strings)
+#define GROUP_TYPE_INDEX_OFF          (0x0000)      // Offset of group string index in category (Index into strings)
 #define IMG_INDEX_OFF                 (0x0001)
 #define ORDER_INDEX_OFF               (0x0002)
 #define NAME_INDEX_OFF                (0x0003)
@@ -53,6 +53,7 @@
 #define EOE_DETAILS_OFF               (0x0007)
 #define FLAGS_OFF                     (0x000B)
 #define EBUS_CURRENT_OFF              (0x000C)
+#define GROUP_NAME_INDEX_OFF          (0x000E)
 #define PHY_PORT_OFF                  (0x0010)
 
 // Sync Manager Category structure, repeated for as many sync managers as used

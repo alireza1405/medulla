@@ -9,10 +9,10 @@ class fmmuType
 public:
     fmmuType(QDomElement element, bool verbose);
 
-    enum fmmuType_t : uint8_t {
+    enum fmmuType_t {
         unused = 0x00,
-        processDataOut = 0x03,
-        processDataIn = 0x04,
+        processDataOut = 0x01,
+        processDataIn = 0x02,
         syncMStatus = 0x03};
 
     fmmuType_t type;

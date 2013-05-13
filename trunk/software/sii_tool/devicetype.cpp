@@ -7,6 +7,19 @@ DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor, QList<Grou
     // Parse Physics attribute, not technically documented, but it seems to work and be used
     QString attributeStr;
 
+    //TODO: Parse all of these values out of ESI file
+    enableSDO = false;
+    enableSDOInfo = false;
+    enablePDOAssign = false;
+    enablePDOConfig = false;
+    enableUploadAtStartup = false;
+    enableSDOCompleteAccess = false;
+    enableFoE = false;
+    enableEoE = false;
+    enableSafeOp = false;
+    enableenableNotLRW = false;
+    ebusCurrent = 0;
+
     physics[0] = notUsed;
     physics[1] = notUsed;
     physics[2] = notUsed;
@@ -45,9 +58,18 @@ DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor, QList<Grou
     else
         qFatal("Couldn't find Type element");
 
+    // Parse Name element
+    nodes = element.elementsByTagName("Name");
+    if (nodes.count() > 0)
+    {
+        if (verb)
+            qDebug()<<"--Found Name element:"<<nodes.at(0).toElement().text();
+        name = nodes.at(0).toElement().text();
+    }
+
     // Parse GroupType element
     nodes = element.elementsByTagName("GroupType");
-    group = 0;
+    groupId = -1;
     if (nodes.count() > 0)
     {
         if (verb)
@@ -57,13 +79,13 @@ DeviceType::DeviceType(QDomElement element, VendorType *deviceVendor, QList<Grou
         for (int count = 0; count < groupList.count(); count++)
         {
             if (groupList[count].type == nodes.at(0).toElement().text())
-                group = &(groupList.at(count));
+                groupId = count;
         }
 
-        if (group != 0)
+        if (groupId != -1)
         {
             if (verb)
-                qDebug()<<"--Found group with name"<<group->name;
+                qDebug()<<"--Found group with name"<<groupList[groupId].name;
         }
         else
             qFatal("Failed to find group in group list");
@@ -175,7 +197,7 @@ void DeviceType::parseType(QDomElement element) {
     else
         serialNumber = 0;
 
-    name = element.text();
+    type = element.text();
 }
 
 void DeviceType::write_sii() {
