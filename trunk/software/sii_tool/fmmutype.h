@@ -17,6 +17,10 @@ public:
 
     fmmuType_t type;
     uint8_t sm;
+    uint8_t su;
+    bool smAssigned;
+    bool suAssigned;
+    bool opOnly;
 
 private:
     bool verb;

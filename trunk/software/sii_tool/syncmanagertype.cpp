@@ -35,9 +35,16 @@ syncManagerType::syncManagerType(QDomElement element, bool verbose)
         if (verb)
             qDebug()<<"--SM type: Unused";
         smType = unused;
+        phyStartAddr = 0;
+        length = 0;
+        controlRegister = 0;
+        enable = false;
+        virtualSM = false;
+        opOnly = false;
         return;
     }
 
+    attributeStr.clear();
     attributeStr = element.attribute("StartAddress");
     if (!attributeStr.isEmpty())
     {
@@ -52,6 +59,7 @@ syncManagerType::syncManagerType(QDomElement element, bool verbose)
     else
         qFatal("No start address found for sync manager");
 
+    attributeStr.clear();
     attributeStr = element.attribute("ControlByte");
     if (!attributeStr.isEmpty())
     {
@@ -66,6 +74,7 @@ syncManagerType::syncManagerType(QDomElement element, bool verbose)
     else
         controlRegister = 0;
 
+    attributeStr.clear();
     attributeStr = element.attribute("DefaultSize");
     if (!attributeStr.isEmpty())
     {
@@ -80,26 +89,35 @@ syncManagerType::syncManagerType(QDomElement element, bool verbose)
     else
         length = 0;
 
-    attributeStr = element.attribute("ControlByte");
+    attributeStr.clear();
+    attributeStr = element.attribute("Enable");
     if (!attributeStr.isEmpty())
     {
         if (verb)
             qDebug()<<"--Found Enable attribute with value:"<<attributeStr;
-        enable = (attributeStr.remove(0,2).toInt(0,16) != 0);
+        if ((attributeStr.at(0) == '#') && (attributeStr.at(1) == 'x'))
+            enable = attributeStr.remove(0,2).toInt(0,16) != 0;
+        else
+            enable = attributeStr.toInt(0,0) != 0;
     }
     else
         enable = false;
 
+    attributeStr.clear();
     attributeStr = element.attribute("Virtual");
     if (!attributeStr.isEmpty())
     {
         if (verb)
             qDebug()<<"--Found Virtual attribute with value:"<<attributeStr;
-        virtualSM = (attributeStr.remove(0,2).toInt(0,16) != 0);
+        if ((attributeStr.at(0) == '#') && (attributeStr.at(1) == 'x'))
+            virtualSM = attributeStr.remove(0,2).toInt(0,16) != 0;
+        else
+            virtualSM = attributeStr.toInt(0,0) != 0;
     }
     else
         virtualSM = false;
 
+    attributeStr.clear();
     attributeStr = element.attribute("OpOnly");
     if (!attributeStr.isEmpty())
     {
@@ -108,5 +126,6 @@ syncManagerType::syncManagerType(QDomElement element, bool verbose)
         opOnly = (attributeStr.remove(0,2).toInt(0,16) != 0);
     }
     else
-        opOnly = false;
+        opOnly = false; 
+
 }

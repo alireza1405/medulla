@@ -73,11 +73,6 @@ EntryType::EntryType(QDomElement element, bool verbose)
             typeIndex = 0x0001;
             bitLen = 1;
         }
-        else if (dataTypeStr.compare("USINT") == 0)
-        {
-            typeIndex = 0x0008;
-            bitLen = 8;
-        }
         else if (dataTypeStr.compare("BIT1") == 0)
         {
             typeIndex = 0x0030;

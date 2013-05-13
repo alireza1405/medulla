@@ -12,6 +12,7 @@ public:
     dcType(QDomElement element, bool verbose);
 
     uint32_t cycleTimeSync0;
+    uint32_t cycleTimeSync1;
     uint32_t shiftTimeSync0;
     uint32_t shiftTimeSync1;
     int16_t cycleTimeSync0Factor;

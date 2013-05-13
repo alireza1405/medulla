@@ -39,8 +39,5 @@ HEADERS  += \
     sii_file.h \
     grouptype.h
 
-#FORMS    += \
-#    sii_tool.ui
-
 OTHER_FILES += \
     Medulla.xml

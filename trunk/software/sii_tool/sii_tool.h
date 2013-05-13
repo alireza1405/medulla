@@ -12,25 +12,26 @@
 #include <sii_file.h>
 #include <grouptype.h>
 
-class sii_tool : public QObject
+class sii_tool
 {
-    Q_OBJECT
     
 public:
-    explicit sii_tool(QStringList args, QObject *parent = 0);
+    explicit sii_tool(bool verb);
+    void parse_esi_file(QString filename);
+    void write_sii_file(QString siiFilename, int index);
+    QList<DeviceType> devices;
     ~sii_tool();
     
 private:
-    QList<DeviceType> devices;
+
     QList<GroupType> groups;
     VendorType *vendor;  // Assuming there will only ever be one vendor per esi file.
     bool verbose;
 
-    void parse_esi_file(QString filename);
-    void write_sii_file(QString siiFilename, int index);
+
     char computeCRC(QByteArray data, int length);
     void setInt16(QByteArray &data, int address, uint16_t value);
-    void setInt32(QByteArray &data, int address, uint16_t value);
+    void setInt32(QByteArray &data, int address, uint32_t value);
     void assembleStringList(DeviceType &device, QStringList &strings);
 };
 
