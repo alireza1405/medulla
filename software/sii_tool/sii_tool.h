@@ -31,7 +31,7 @@ private:
     char computeCRC(QByteArray data, int length);
     void setInt16(QByteArray &data, int address, uint16_t value);
     void setInt32(QByteArray &data, int address, uint16_t value);
-    QStringList assembleStringList(DeviceType device);
+    void assembleStringList(DeviceType &device, QStringList &strings);
 };
 
 #endif // SII_TOOL_H

@@ -15,7 +15,7 @@
 		<Devices>
 			<Device Physics="YY">
 				<Type ProductCode="#x00000004" RevisionNo="#x00000003">ATRIAS 2.1 EtherCAT Test (Medulla 1.5)</Type>
-				<Name LcId="1033"><![CDATA[ATRIAS 2.1 EtherCAT Test (Medulla 1.5)]]></Name>
+                                <Name LcId="1033"><![CDATA[ATRIAS 2.1 EtherCAT Test (Medulla 1.5)]]></Name>
 				<GroupType>Medulla</GroupType>
 				<Fmmu Sm="2">Outputs</Fmmu>
 				<Fmmu Sm="3">Inputs</Fmmu>

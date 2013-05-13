@@ -1,5 +1,4 @@
 #include "sii_tool.h"
-#include "ui_sii_tool.h"
 
 sii_tool::sii_tool(QStringList args, QObject *parent) :
     QObject(parent)
@@ -11,7 +10,7 @@ sii_tool::sii_tool(QStringList args, QObject *parent) :
         verbose = false;
 
     parse_esi_file(args.at(1));
-    //write_sii_file("/home/kit/medulla/software/sii_tool/test.bin",0);
+    write_sii_file("/home/kit/medulla/software/sii_tool/test.bin",0);
     exit(0);
 }
 
@@ -49,7 +48,8 @@ void sii_tool::parse_esi_file(QString filename)
     {
         QDomNodeList groupElements = groupsElements.at(groupsCounter).toElement().elementsByTagName("Group");
         for (int groupCounter = 0; groupCounter < groupElements.count(); groupCounter++) {
-            qDebug() << "Parsing group element:";
+            if (verbose)
+                qDebug() << "Parsing group element:";
             groups.append(GroupType(groupElements.at(groupCounter).toElement(),verbose));
         }
     }
@@ -63,7 +63,8 @@ void sii_tool::parse_esi_file(QString filename)
         QDomNodeList deviceElements = devicesElements.at(devicesCounter).toElement().elementsByTagName("Device");
         for (int deviceCounter = 0; deviceCounter < deviceElements.count(); deviceCounter++)
         {
-            qDebug()<<"Parsing device element:";
+            if (verbose)
+                qDebug()<<"Parsing device element:";
             devices.append(DeviceType(deviceElements.at(deviceCounter).toElement(),vendor,groups,verbose));
         }
     }
@@ -93,12 +94,13 @@ void sii_tool::write_sii_file(QString siiFilename, int index)
     }
 
     int baseAddr = 0;
+    QStringList strings;
 
     // If we are here, we need to actually assemnbly the sii file, start by making a byte array of the right size
     QByteArray siiData(device.eeprom->size,0);
 
     // Populate configData section
-    siiData.replace(CONFIG_DATA,14,device.eeprom->configData.data(),14);
+    siiData.replace(CONFIG_DATA,device.eeprom->configData.length(),device.eeprom->configData);
 
     // Populate configData checksum
     siiData[CONFIG_CHECK] = computeCRC(device.eeprom->configData,14);
@@ -110,7 +112,7 @@ void sii_tool::write_sii_file(QString siiFilename, int index)
     setInt32(siiData,SERIAL_NUMBER,device.serialNumber);
 
     // Populate bootstrap section
-    siiData.replace(BOOTSTRAP_DATA,8,device.eeprom->bootStrap.data(),8);
+    siiData.replace(BOOTSTRAP_DATA,device.eeprom->bootStrap.length(),device.eeprom->bootStrap);
 
     // Populate Mailbox configuration
     // TODO: Figure out how to parse the rest of the mailbox values
@@ -122,6 +124,81 @@ void sii_tool::write_sii_file(QString siiFilename, int index)
 
     // Start category section with strings section
     baseAddr = SII_CATEGORIES;
+    int stringsPosAddr = baseAddr+4;
+
+    assembleStringList(device,strings);
+    setInt16(siiData,baseAddr,CAT_TYPE_STRINGS);
+
+    siiData[stringsPosAddr++] = (char)(strings.count());
+
+    for (int stringCount = 0; stringCount < strings.count(); stringCount++)
+    {
+        siiData[stringsPosAddr++] = strings.at(stringCount).length();
+        siiData.replace(stringsPosAddr,strings.at(stringCount).length(),strings.at(stringCount).toAscii());
+        stringsPosAddr += strings.at(stringCount).length();
+    }
+
+    if (((stringsPosAddr-baseAddr-4) % 2) == 1) // Length is odd, pad one byte
+        siiData[stringsPosAddr++] = 0xFF;
+
+    setInt16(siiData,baseAddr+2,(stringsPosAddr-baseAddr-4)/2); // Write length of strings category, divide by two to get word length
+    baseAddr = stringsPosAddr; // Update baseAddr for next category
+
+    // Write General Category
+    setInt16(siiData,baseAddr,CAT_TYPE_GENERAL);
+    setInt16(siiData,baseAddr+2,GENERAL_CAT_LENGTH/2); // Divide by two for word length
+    baseAddr += 4; // Point baseAddr to beginning of category data.
+
+    if (groups[device.groupId].type.length())
+        siiData[baseAddr+GROUP_TYPE_INDEX_OFF] = strings.indexOf(groups[device.groupId].type) + 1;
+
+    // Image data not populated by TwinCAT, so we won't do it either (for now)
+
+    if (device.type.length())
+    {
+        siiData[baseAddr+ORDER_INDEX_OFF] = strings.indexOf(device.type) + 1;
+    }
+
+    if (device.name.length())
+    {
+        siiData[baseAddr+NAME_INDEX_OFF] = strings.indexOf(device.name) + 1;
+    }
+
+
+    siiData[baseAddr+0x0004] = 1; // For some reason, this reserved byte is set to 1
+
+    siiData[baseAddr+COE_DETAILS_OFF] = (device.enableSDO               ? (1<<0) : 0) |
+                                        (device.enableSDOInfo           ? (1<<1) : 0) |
+                                        (device.enablePDOAssign         ? (1<<2) : 0) |
+                                        (device.enablePDOConfig         ? (1<<3) : 0) |
+                                        (device.enableUploadAtStartup   ? (1<<4) : 0) |
+                                        (device.enableSDOCompleteAccess ? (1<<5) : 0) ;
+
+    siiData[baseAddr+FOE_DETAILS_OFF] = (device.enableFoE ? 1 : 0);
+    siiData[baseAddr+EOE_DETAILS_OFF] = (device.enableEoE ? 1 : 0);
+    siiData[baseAddr+FLAGS_OFF] = (device.enableSafeOp       ? (1<<0) : 0) |
+                                  (device.enableenableNotLRW ? (1<<1) : 0) ;
+
+    setInt16(siiData,baseAddr+EBUS_CURRENT_OFF,device.ebusCurrent);
+
+    if (groups[device.groupId].name.length())
+        siiData[baseAddr+GROUP_NAME_INDEX_OFF] = strings.indexOf(groups[device.groupId].name) + 1;
+
+    setInt16(siiData,baseAddr+PHY_PORT_OFF, ((uint16_t)(device.physics[0]) << 0) |
+                                            ((uint16_t)(device.physics[1]) << 4) |
+                                            ((uint16_t)(device.physics[2]) << 8) |
+                                            ((uint16_t)(device.physics[3]) << 12));
+
+    baseAddr += GENERAL_CAT_LENGTH; // Update base address for next category
+
+    // Populate FMMU category
+    setInt16(siiData,baseAddr,CAT_TYPE_FMMU);
+    setInt16(siiData,baseAddr+2,device.fmmus.length()/2);
+    baseAddr += 4;
+    for (int count = 0; count < device.fmmus.length(); count++)
+        siiData[baseAddr++] = (char)(device.fmmus.at(count).type);
+
+    // Populate Sync Manager category
 
 
     siiFile.write(siiData);
@@ -170,12 +247,48 @@ void sii_tool::setInt32(QByteArray &data, int address, uint16_t value)
     data[address+3] = (value>>24) & 0xFF;
 }
 
-QStringList sii_tool::assembleStringList(DeviceType device)
+void sii_tool::assembleStringList(DeviceType &device, QStringList &strings)
 {
-    // Generate list of device strings with same order as TwinCAT creates
-    QStringList strings;
-    strings.append(device.name);
-    //strings.append(device.groupName);
     //TODO: Add parsing of image data
-    //strings.append();
+    // Generate list of device strings with same order as TwinCAT creates
+    if (device.type.length())
+        strings.append(device.type);
+
+    if(groups[device.groupId].type.length() && (strings.indexOf(groups[device.groupId].type) == -1))
+        strings.append(groups[device.groupId].type);
+
+    if(groups[device.groupId].name.length() && (strings.indexOf(groups[device.groupId].name) == -1))
+        strings.append(groups[device.groupId].name);
+
+    if (device.name.length() && (strings.indexOf(device.name) == -1))
+        strings.append(device.name);
+
+    if (device.dcConf->DCSyncName.length() && (strings.indexOf(device.dcConf->DCSyncName) == -1))
+        strings.append(device.dcConf->DCSyncName);
+
+    for (int PDOcount = 0; PDOcount < device.txPDOs.count(); PDOcount++)
+    {
+        if (device.txPDOs.at(PDOcount).name.length() && (strings.indexOf(device.txPDOs.at(PDOcount).name) == -1))
+            strings.append(device.txPDOs.at(PDOcount).name);
+        for (int entryCount = 0; entryCount < device.txPDOs.at(PDOcount).pdoEntries.count(); entryCount++)
+        {
+            if (device.txPDOs.at(PDOcount).pdoEntries.at(entryCount).name.length() &&
+                    (strings.indexOf(device.txPDOs.at(PDOcount).pdoEntries.at(entryCount).name) == -1))
+                strings.append(device.txPDOs.at(PDOcount).pdoEntries.at(entryCount).name);
+        }
+    }
+
+    for (int PDOcount = 0; PDOcount < device.rxPDOs.count(); PDOcount++)
+    {
+        if (device.rxPDOs.at(PDOcount).name.length() && (strings.indexOf(device.rxPDOs.at(PDOcount).name) == -1))
+            strings.append(device.rxPDOs.at(PDOcount).name);
+        for (int entryCount = 0; entryCount < device.rxPDOs.at(PDOcount).pdoEntries.count(); entryCount++)
+        {
+
+            if (device.rxPDOs.at(PDOcount).pdoEntries.at(entryCount).name.length() &&
+                    (strings.indexOf(device.rxPDOs.at(PDOcount).pdoEntries.at(entryCount).name) == -1))
+                strings.append(device.rxPDOs.at(PDOcount).pdoEntries.at(entryCount).name);
+        }
+    }
+
 }
