@@ -73,10 +73,10 @@ ad7193_t ad7193_init(PORT_t *usart_port, USART_t *usart_reg, int16_t *destinatio
 	}
 	buffer->adc_pntr = &adc;
 	
-//	_ad7193_reset(buffer);
+	_ad7193_reset(buffer);
 	// Configure ADC register
-//	_ad7193_write_reg(buffer,2,0x4);
-//	_ad7193_write_reg(buffer,1,0x080004);
+	_ad7193_write_reg(buffer,2,0x4);
+	_ad7193_write_reg(buffer,1,0x080004);
 	adc.usart_reg->CTRLA = USART_RXCINTLVL_MED_gc;
 
 	return adc;
@@ -109,7 +109,7 @@ bool ad7193_start_read(ad7193_t *adc) {
 }
 
 inline bool ad7193_read_complete(ad7193_t *adc) {
-	return !adc->currently_reading;
+	return (!adc->currently_reading);
 }
 
 void ad7193_process_data(ad7193_t *adc) {
@@ -129,7 +129,7 @@ void ad7193_process_data(ad7193_t *adc) {
 		default: buffer = 0;
 	}
 	buffer->adc_pntr = adc;
-	memcpy(adc->destination,buffer->buffer+2,2);
+	memcpy(adc->destination,buffer->buffer+1,2);
 	*(adc->destination) -= (int16_t)(0x8000);
 }
 
