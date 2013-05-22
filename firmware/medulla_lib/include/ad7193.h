@@ -24,9 +24,9 @@ typedef struct {
 } ad7193_t;
 
 typedef struct {
-	uint8_t buffer[4];
-	volatile uint8_t buffer_position;
 	ad7193_t *adc_pntr;
+	volatile uint8_t buffer_position;
+	uint8_t buffer[4];
 } _ad7193_buffer_t;
 
 _ad7193_buffer_t _ad7193_USARTC0,
@@ -46,20 +46,19 @@ ISR(USART_PORT##_TXC_vect) { /* TX complete interrupt used for sending configura
 	} \
 	else \
 		_ad7193_##USART_PORT.adc_pntr->currently_reading = false; \
-} \
+}\
+\
 ISR(USART_PORT##_RXC_vect) { /* RX complete interrupt used for reading ADC data */ \
-	/*if (_ad7193_##USART_PORT.buffer_position > 0) */\
-		/*_ad7193_##USART_PORT.buffer[5 - _ad7193_##USART_PORT.buffer_position] = USART_PORT.DATA;*/ \
+	if (_ad7193_##USART_PORT.buffer_position > 0) \
+		_ad7193_##USART_PORT.buffer[4 - _ad7193_##USART_PORT.buffer_position] = USART_PORT.DATA; \
 	\
-	if (_ad7193_##USART_PORT.buffer_position < 4) { \
+	if (_ad7193_##USART_PORT.buffer_position < 3) \
 		USARTF0.DATA = 0; \
-		_ad7193_##USART_PORT.buffer_position += 1;  \
-		return; \
-	} \
-	PORTC.OUTSET = 1; \
-	_ad7193_##USART_PORT.adc_pntr->currently_reading = false; \
-	PORTC.OUTCLR = 1; \
-} \
+	else \
+		_ad7193_##USART_PORT.adc_pntr->currently_reading = false; \
+	\
+	_ad7193_##USART_PORT.buffer_position += 1;  \
+}
 
 ad7193_t ad7193_init(PORT_t *usart_port, USART_t *usart_reg, int16_t *destination);
 
