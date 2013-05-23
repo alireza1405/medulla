@@ -17,6 +17,7 @@ int main(int argc, char *argv[])
         qDebug()<<"  -a            Generate SII files for all devices in ESI file";
         qDebug()<<"  -i <index>    Generate SII file for a given zero indexed device in the ESI file";
         qDebug()<<"  -o <file>     Places SII file in gievn file, only works with -i";
+        qDebug()<<"  -l            List devicecs found in ESI file";
         return 0;
     }
 
@@ -50,6 +51,10 @@ int main(int argc, char *argv[])
             return 0;
         }
     }
+
+    bool list = false;
+    if (args.indexOf("-l"))
+        list = true;
 
     bool all;
     if (args.indexOf("-a") != -1)
@@ -89,6 +94,14 @@ int main(int argc, char *argv[])
 
     w.parse_esi_file(args.last());
 
+    if (list)
+    {
+        qDebug() << "Index:     Device:";
+        for (int count = 0; count < w.devices.count(); count++)
+        {
+            qDebug("%-10d %s",count,w.devices[count].type.toAscii().data());
+        }
+    }
 
     if (all)
     {
