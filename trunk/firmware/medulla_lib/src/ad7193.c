@@ -51,7 +51,7 @@ ad7193_t ad7193_init(PORT_t *usart_port, USART_t *usart_reg, int16_t *destinatio
 	adc.usart_reg->CTRLB = USART_RXEN_bm | USART_TXEN_bm;
 	adc.usart_reg->CTRLC = USART_CMODE_MSPI_gc | 1<<1;
 	adc.usart_port->PIN1CTRL |= 1<<6;
-	adc.usart_reg->BAUDCTRLA = 3;
+	adc.usart_reg->BAUDCTRLA = 100;
 	adc.usart_reg->CTRLA = USART_TXCINTLVL_MED_gc;
 
 	adc.usart_port->DIRSET = 1<<1 | 1<<3;
@@ -75,7 +75,7 @@ ad7193_t ad7193_init(PORT_t *usart_port, USART_t *usart_reg, int16_t *destinatio
 	
 	_ad7193_reset(buffer);
 	// Configure ADC register
-	_ad7193_write_reg(buffer,2,0x4);
+	_ad7193_write_reg(buffer,2,0x6);
 	_ad7193_write_reg(buffer,1,0x080004);
 	adc.usart_reg->CTRLA = USART_RXCINTLVL_MED_gc;
 
@@ -130,6 +130,6 @@ void ad7193_process_data(ad7193_t *adc) {
 	}
 	buffer->adc_pntr = adc;
 	memcpy(adc->destination,buffer->buffer+1,2);
-	*(adc->destination) -= (int16_t)(0x8000);
+	//*(adc->destination) -= (int16_t)(0x8000);
 }
 
