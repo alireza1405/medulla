@@ -23,6 +23,7 @@ typedef struct {
 	io_pin_t panic_pin;
 	io_pin_t estop_pin;
 	limit_sw_port_t limit_sw_port;
+	bool is_enabled;
 } estop_port_t;
 
 #define ESTOP_USES_PORT LIMIT_SW_USES_PORT
