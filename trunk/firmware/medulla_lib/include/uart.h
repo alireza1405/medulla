@@ -47,7 +47,7 @@ typedef enum {
 	uart_baud_203400 = 0xE01F,
 	uart_baud_460800 = 0xD01B,
 	uart_baud_500000 = 0x1001,
-	uart_baud_921600 = 0xC013,
+	uart_baud_921600 = 0x9069,
 	uart_baud_1M = 1
 } uart_baud_t;
 
