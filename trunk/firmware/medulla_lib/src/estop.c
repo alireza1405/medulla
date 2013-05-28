@@ -33,7 +33,7 @@ inline void estop_assert_port(estop_port_t *estop_port) {
 
 inline void estop_deassert_port(estop_port_t *estop_port) {
 	if (estop_port->is_enabled)
-		io_set_output(estop_port->panic_pin, io_high);
+		estop_port->estop_pin.io_port->OUTSET = 1<<estop_port->estop_pin.pin;
 }
 
 bool estop_is_estopped(estop_port_t *estop_port) {
