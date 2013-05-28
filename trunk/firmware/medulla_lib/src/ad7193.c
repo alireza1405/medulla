@@ -15,6 +15,7 @@ bool _ad7193_write_reg(_ad7193_buffer_t *adc_buffer, uint8_t reg, uint32_t value
 		adc_buffer->buffer_position = 1;
 		adc_buffer->adc_pntr->usart_reg->DATA = adc_buffer->buffer[0];
 		while (adc_buffer->buffer_position < 4); // wait to finish transmitting
+		adc_buffer->adc_pntr->currently_reading = false;
 	}
 	return true;
 }
@@ -34,6 +35,7 @@ bool _ad7193_reset(_ad7193_buffer_t *adc_buffer)
 		adc_buffer->buffer_position = 0;
 		adc_buffer->adc_pntr->usart_reg->DATA = 0xFF; // Start transmitting
 		while (adc_buffer->buffer_position < 4); // wait to finish transmitting
+		adc_buffer->adc_pntr->currently_reading = false;
 		_delay_us(500); // You need to wait at least 500uS after resetting before you can do anything
 	}
 	return true;
@@ -47,15 +49,15 @@ ad7193_t ad7193_init(PORT_t *usart_port, USART_t *usart_reg, int16_t *destinatio
 	adc.destination = destination;
 	adc.currently_reading = false;
 
+	adc.usart_port->DIRSET = 1<<1 | 1<<3;
+	adc.usart_port->DIRCLR = 1<<2;
+
 	// now setup the usart for SPI mode
 	adc.usart_reg->CTRLB = USART_RXEN_bm | USART_TXEN_bm;
 	adc.usart_reg->CTRLC = USART_CMODE_MSPI_gc | 1<<1;
 	adc.usart_port->PIN1CTRL |= 1<<6;
 	adc.usart_reg->BAUDCTRLA = 100;
 	adc.usart_reg->CTRLA = USART_TXCINTLVL_MED_gc;
-
-	adc.usart_port->DIRSET = 1<<1 | 1<<3;
-	adc.usart_port->DIRCLR = 1<<2;
 
 	// setup the transmit buffer so we can configure the ADC
 	_ad7193_buffer_t *buffer;
