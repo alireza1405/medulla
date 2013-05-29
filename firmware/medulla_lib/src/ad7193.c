@@ -132,6 +132,6 @@ void ad7193_process_data(ad7193_t *adc) {
 	}
 	buffer->adc_pntr = adc;
 	memcpy(adc->destination,buffer->buffer+1,2);
-	//*(adc->destination) -= (int16_t)(0x8000);
+	*(adc->destination) -= (int16_t)(0x8000);
 }
 
