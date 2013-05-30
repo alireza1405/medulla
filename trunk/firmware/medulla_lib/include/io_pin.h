@@ -43,7 +43,7 @@ typedef enum {
  *  vale interpreted as true, and a low value interpreted as false.
  */
 typedef enum {
-	io_high = -1,
+	io_high = 1,
 	io_low = 0
 } io_pin_level_t;
 
