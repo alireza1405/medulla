@@ -22,8 +22,8 @@ adc124_t adc124_init(PORT_t *usart_port, USART_t *usart_reg, io_pin_t CS_pin, ui
 
 	// Setup the chip select pin
 	adc.CS_pin = CS_pin;
-	io_set_direction(CS_pin,io_output);
-	io_set_output(CS_pin,io_high);
+	adc.CS_pin.io_port->DIRSET = 1<<adc.CS_pin.pin;
+	adc.CS_pin.io_port->OUTSET = 1<<adc.CS_pin.pin;
 
 	// setup the transmit buffer
 	_adc124_buffer_t *buffer;
@@ -70,7 +70,7 @@ void adc124_start_read(adc124_t *adc) {
 		case ((intptr_t)&USARTF1): buffer = &_adc124_USARTF1; break;
 		default: buffer = 0;
 	}
-	io_set_output(adc->CS_pin,io_low);
+	adc->CS_pin.io_port->OUTCLR = 1<<adc->CS_pin.pin;
 	buffer->adc_pntr = adc;
 
 	buffer->tx_buffer_position = 0;
