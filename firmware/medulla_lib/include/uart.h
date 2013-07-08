@@ -12,7 +12,7 @@
  *  from a port's buffers.
  *
  *  This driver uses two circular buffers to store it's transmit and receive
- *  data. These buffers are supplied by the user when the port is initilized,
+ *  data. These buffers are supplied by the user when the port is initialized,
  *  this gives the user complete control over their memory. Once the transmit
  *  buffer is full, you cannot add anything more to it. If the receive buffer is
  *  full and a new byte is received, the oldest data in the buffer is thrown
@@ -130,13 +130,13 @@ ISR(USART_PORT##_RXC_vect) { \
 	_uart_buffer_##USART_PORT.rx_buffer_end = ((_uart_buffer_##USART_PORT.rx_buffer_end+1) % _uart_buffer_##USART_PORT.rx_buffer_size); \
 } \
 
-/** @brief Initilize a UART port.
+/** @brief Initialize a UART port.
  *
- *  This function initilizes a uart_port_t struct and USART hardware for a new
+ *  This function initializes a uart_port_t struct and USART hardware for a new
  *  UART port. 
  *
  *  @note
- *  This function only initilizes the port struct and hardware, it does not
+ *  This function only initializes the port struct and hardware, it does not
  *  connect the buffers to the interrupts. uart_connect_port() needs to be called
  *  before the port can be used.
  *

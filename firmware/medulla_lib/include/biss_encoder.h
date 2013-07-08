@@ -41,7 +41,7 @@ typedef struct {
  */ 
 #define BISS_ENCODER_USES_PORT SPI_USES_PORT
 
-/** @brief Creates and initilizes a Biss-C encoder struct
+/** @brief Creates and initializes a Biss-C encoder struct
  *
  *  This function sets up a new Biss-C encoder. The timestamp_timer pointer 
  *  is defined as void pointers so that either a TC0_t or TC1_t pointer can be

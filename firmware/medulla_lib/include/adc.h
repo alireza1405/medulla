@@ -62,7 +62,7 @@ ISR(ADC##_CH3_vect) { \
 	} \
 } \
 
-/** @brief Initilize a port of ADC inputs
+/** @brief Initialize a port of ADC inputs
  *  
  *  This function creates and returns a configured adc_port_t struct. It also
  *  configures the given analog to digital convertor to operate with this
@@ -73,14 +73,14 @@ ISR(ADC##_CH3_vect) { \
  */
 adc_port_t adc_init_port(ADC_t *adc);
 
-/** @brief Initilizes a pin on an ADC port
+/** @brief Initializes a pin on an ADC port
  *
  *  This function configures a given pin on and ADC port. The pin_data pointer
  *  is the location to which the result of the ADC convertion will be written
  *  to. This function must be called for each pin that the ADC should read.
  *
- *  @param adc Pointer to an adc_porti_t struct to initilize the pin on.
- *  @param pin Zero indexed number of the pin to initilize
+ *  @param adc Pointer to an adc_porti_t struct to initialize the pin on.
+ *  @param pin Zero indexed number of the pin to initialize
  *  @param pin_result Pointer to location to store result
  */
 void adc_init_pin(adc_port_t *adc, uint8_t pin, uint16_t *pin_result);

@@ -13,7 +13,7 @@
 /** @brief Struct containing all the important information about a pin.
  *
  *  The io_pin_t type is a struct that can be used to describe any GPIO pin on
- *  the xMega. Once the struct has been initilized using the io_init_pin macro
+ *  the xMega. Once the struct has been initialized using the io_init_pin macro
  *  it contains pointers to all of the addresses nessesary to use the pin.
  */
 typedef struct {
@@ -47,10 +47,10 @@ typedef enum {
 	io_low = 0
 } io_pin_level_t;
 
-/** @brief Initilizes an io_pin_t struct.
+/** @brief Initializes an io_pin_t struct.
  *
  *  The IO_init_pin function creates a struct definition for an io_pin_t struct.
- *  This is the preferred way to initilize an io_pin_t because it ensures that
+ *  This is the preferred way to initialize an io_pin_t because it ensures that
  *  all the nessesary values will be in place.
  *
  *  @param port Pointer to the physical xMega port the pin is on.

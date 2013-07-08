@@ -38,7 +38,7 @@ typedef struct {
  */ 
 #define SSI_ENCODER_USES_PORT SPI_USES_PORT
 
-/** @brief Creates and initilizes a SSI encoder struct
+/** @brief Creates and initializes a SSI encoder struct
  *
  *  This function sets up a new SSI encoder. The timestamp_timer pointer is defined
  *  as void pointers so that either a TC0_t or TC1_t pointer can be passed into
