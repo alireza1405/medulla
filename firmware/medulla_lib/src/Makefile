@@ -26,6 +26,11 @@ CFLAGS += $(patsubst %,-I%,$(INCLUDE_DIRS))
 CFLAGS += -mmcu=$(MCU)
 CFLAGS += -std=gnu99
 
+# avr-libc version > 1.7.0?
+ifeq "$(shell expr `gcc -dumpversion` \> 1.7.0)" "1"
+	CFLAGS += -D__DELAY_BACKWARD_COMPATIBLE__   # The new implementation of _delay_us(double __us) with __builtin_avr_delay_cycles(unsigned long) support is not backward compatible. This get us a backward compatible delay.
+endif
+
 # Define all object files
 OBJS = $(patsubst %.c,$(OBJDIR)/%.o,$(SOURCES))
 
