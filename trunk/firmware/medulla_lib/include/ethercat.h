@@ -27,7 +27,7 @@
  *  
  *  This struct keeps tract of the ethercat slave's configration. The rx and tx
  *  sync manager buffers must be allocated by the user and must be of the
- *  appropreate size. ecat_slave_init() checks for this, but after initilization
+ *  appropreate size. ecat_slave_init() checks for this, but after initialization
  *  the values are assumed to be correct. If the sync manager size is smaller
  *  than the sync manager size in the ESC, the ESC will throw out any data
  *  wrietten to the SM.
@@ -63,7 +63,7 @@ typedef struct {
 	uint8_t entry_size;			/**< Size of the pdo entry in bytes */
 } ecat_pdo_entry_t;
 
-/** @brief Initilizes ethercat slave
+/** @brief Initializes ethercat slave
  *
  *  This function sets up an ecat_slate_t struct and configures the hardware for
  *  communications with the ESC chip. Before the slave can be used the sync
@@ -81,7 +81,7 @@ typedef struct {
  */
 ecat_slave_t ecat_init_slave(PORT_t *spi_port, SPI_t *spi_register, io_pin_t eeprom_pin, io_pin_t irq_pin);
 
-/** @brief Initilize the sync manager buffers
+/** @brief Initialize the sync manager buffers
  *
  *  This function configures the sync managers for the a given ecat_slave_t
  *  struct. This function does not check the size of physical address of either

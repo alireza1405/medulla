@@ -105,9 +105,9 @@ ISR(SPI_PORT##_INT_vect) {\
 	} \
 }\
 
-/** @brief Initilizes a hardware SPI port on the xMega
+/** @brief Initializes a hardware SPI port on the xMega
  *
- *  This function sets up a spi_port_t struct and also initilizes the SPI
+ *  This function sets up a spi_port_t struct and also initializes the SPI
  *  hardware on the xMega. This function should always be used to generate the
  *  spi_port_t structs. If it is not used, then the hardware may not be
  *  configured correctly.

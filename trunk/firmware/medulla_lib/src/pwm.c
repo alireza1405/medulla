@@ -1,7 +1,7 @@
 #include "pwm.h"
 #include "stdio.h"
 
-pwm_output_t pwm_initilize_output(io_pin_t pwm_pin, pwm_clk_div_t clock_divider, uint16_t cnt_max) {
+pwm_output_t pwm_initialize_output(io_pin_t pwm_pin, pwm_clk_div_t clock_divider, uint16_t cnt_max) {
 	pwm_output_t pwm;	// Create a pwm struct to return
 	
 	// Figure out which counter to use, and set up the registers

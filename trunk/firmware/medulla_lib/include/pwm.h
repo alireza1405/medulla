@@ -9,7 +9,7 @@
  *  generate PWM, as these are the only pins that are connected to timer
  *  counters. Since there are multiple pins are connected to a single timer, it
  *  is important to realize that all the pins connected to a single timer share
- *  the same timer configuration. Whenever the pwm_initilize_output() function
+ *  the same timer configuration. Whenever the pwm_initialize_output() function
  *  is called the configuration for that pin's timer is overwritten, and any
  *  currently running PWM outputs will be reconfigured. 
  */
@@ -19,7 +19,7 @@
 
 /** @brief Type for defining clock divider
  *
- *  This enum is used by pwm_initilize_output to set the clock divider for the
+ *  This enum is used by pwm_initialize_output to set the clock divider for the
  *  timer counter. This enum uses values that can be direcly put into the CTRLA
  *  register to set the clock divider.
  */
@@ -57,7 +57,7 @@ typedef struct {
  *  @note Setting the clock_devider and maximum counter value will change these
  *  values for all PWM outputs using this counters.
  */
-pwm_output_t pwm_initilize_output(io_pin_t pwm_pin, pwm_clk_div_t clock_divider, uint16_t cnt_max);
+pwm_output_t pwm_initialize_output(io_pin_t pwm_pin, pwm_clk_div_t clock_divider, uint16_t cnt_max);
 
 /** @brief Enables the PWM generation output
  *

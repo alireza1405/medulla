@@ -70,7 +70,7 @@ ISR(COUNTER##_OVF_vect) { \
 } \
 
 
-/** @brief Initilizes a port containing limit switches
+/** @brief Initializes a port containing limit switches
  */
 limit_sw_port_t limit_sw_init_port(PORT_t *limit_sw_port, uint8_t pin_mask, void *counter_pntr, void (*callback)(void));
 
