@@ -25,6 +25,7 @@ CFLAGS += -include stdint.h
 CFLAGS += $(patsubst %,-I%,$(INCLUDE_DIRS))
 CFLAGS += -mmcu=$(MCU)
 CFLAGS += -std=gnu99
+CFLAGS += -D__DELAY_BACKWARD_COMPATIBLE__
 
 # avr-libc version > 1.7.0?
 ifeq "$(shell expr `gcc -dumpversion` \> 1.7.0)" "1"
