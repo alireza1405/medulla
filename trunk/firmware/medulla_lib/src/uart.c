@@ -72,7 +72,7 @@ int uart_connect_port(uart_port_t *port, bool use_for_stdio) {
 	current_buffer->rx_buffer_end = 0;
 	
 	//now that the buffer has been configured, we can enable the interrupts
-	port->uart_register->CTRLA = USART_RXCINTLVL_MED_gc | USART_TXCINTLVL_MED_gc;
+	port->uart_register->CTRLA = USART_RXCINTLVL_LO_gc | USART_TXCINTLVL_LO_gc;
 
 	// If this port is to be used as the standard IO port for printf/scanf, then we need to set the _uart_stdio_port pointer
 	if (use_for_stdio) {
