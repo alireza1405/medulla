@@ -8,6 +8,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdbool.h>
+#include <util/delay.h>
 
 #include "io_pin.h"
 
@@ -24,7 +25,7 @@ typedef struct {
 
 typedef struct {
 	uint8_t tx_buffer[8];
-	uint8_t rx_buffer[8];
+	volatile uint8_t rx_buffer[8];
 	volatile uint8_t tx_buffer_position;
 	volatile uint8_t rx_buffer_position;
 	adc124_t *adc_pntr;
