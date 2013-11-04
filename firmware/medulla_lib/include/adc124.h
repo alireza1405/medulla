@@ -8,7 +8,6 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdbool.h>
-#include <util/delay.h>
 
 #include "io_pin.h"
 
@@ -25,7 +24,7 @@ typedef struct {
 
 typedef struct {
 	uint8_t tx_buffer[8];
-	volatile uint8_t rx_buffer[8];
+	uint8_t rx_buffer[8];
 	volatile uint8_t tx_buffer_position;
 	volatile uint8_t rx_buffer_position;
 	adc124_t *adc_pntr;
@@ -40,6 +39,7 @@ _adc124_buffer_t _adc124_USARTC0,
                  _adc124_USARTF0,
                  _adc124_USARTF1;
 
+// ISR vectors
 #define ADC124_USES_PORT(USART_PORT) \
 ISR(USART_PORT##_TXC_vect) { \
 	if (_adc124_##USART_PORT.tx_buffer_position < 7) { \
