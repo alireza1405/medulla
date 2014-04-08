@@ -59,6 +59,15 @@ void cpu_configure_interrupt_level(cpu_interrupt_level_t interrupt_level, bool e
 		PMIC.CTRL &= ~interrupt_level;
 }
 
+void cpu_configure_round_robin_scheduling(bool enable) {
+	if (enable)
+		// we are enabling, so set the Round Robin Enable bit in the PMIC control register
+		PMIC.CTRL |= 1<<RREN;
+	else
+		// we are disabling, so clear the Round Robin Enable bit
+		PMIC.CTRL &= ~(1<<RREN);
+}
+
 inline void cpu_reset(void) {
 	RST.CTRL = 1;
 }
