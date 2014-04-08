@@ -87,6 +87,19 @@ bool cpu_configure_rtc(bool enabled);
  */
 void cpu_configure_interrupt_level(cpu_interrupt_level_t interrupt_level, bool enable);
 
+/** @brief Enable or disable Round Robin Interrupt Scheduling
+ *
+ * Interrupts are prioritized by both their interrupt level and their vector address.
+ * If two or more interrupts are called simultaneously with the same priority level,
+ * their execution order is based on their address. Round Robin Scheduling executes
+ * simultaneous interrupts based on their position relative to the last executed
+ * interrupts, preventing starvation of interrupts with low addresses.
+ *
+ * @param enable Set to true to enable Round Robin Scheduling, set to false to
+ * disable.
+ */
+ void cpu_configure_round_robin_scheduling(bool enable);
+
 /** @brief Reset the xMega
  *  
  *  Calling this function will immediately cause the xMega to reset as if the

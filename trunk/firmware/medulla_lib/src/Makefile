@@ -6,7 +6,7 @@ MCU = atxmega128a1
 F_CPU = 32000000
 
 # Source Files
-SOURCES = uart.c spi.c cpu.c ethercat.c io_pin.c pwm.c limit_switch.c estop.c biss_encoder.c hengstler_ssi_encoder.c renishaw_ssi_encoder.c quadrature_encoder.c dzralte_comm.c adc.c adc124.c imu.c ad7193.c
+SOURCES = uart.c spi.c cpu.c ethercat.c io_pin.c pwm.c limit_switch.c estop.c biss_encoder.c hengstler_ssi_encoder.c renishaw_ssi_encoder.c quadrature_encoder.c dzralte_comm.c adc.c adc124.c ad7193.c
 
 # Output file and directory
 OUTPUT = medulla_lib
