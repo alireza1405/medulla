@@ -18,7 +18,7 @@ adc124_t adc124_init(PORT_t *usart_port, USART_t *usart_reg, io_pin_t CS_pin, ui
 	usart_reg->CTRLA = USART_TXCINTLVL_MED_gc | USART_RXCINTLVL_MED_gc;
 	usart_reg->CTRLB = USART_RXEN_bm | USART_TXEN_bm;
 	usart_reg->CTRLC = USART_CMODE_MSPI_gc;
-	usart_reg->BAUDCTRLA = 7;
+	usart_reg->BAUDCTRLA = 15;
 
 	// Setup the chip select pin
 	adc.CS_pin = CS_pin;
@@ -97,9 +97,9 @@ void adc124_process_data(adc124_t *adc) {
 		default: buffer = 0;
 	}
 
-	*(adc->ch0_destination) = (((uint16_t)(buffer->rx_buffer[0]))<<8 | buffer->rx_buffer[1]) & 0xFFF;
-	*(adc->ch1_destination) = (((uint16_t)(buffer->rx_buffer[2]))<<8 | buffer->rx_buffer[3]) & 0xFFF;
-	*(adc->ch2_destination) = (((uint16_t)(buffer->rx_buffer[4]))<<8 | buffer->rx_buffer[5]) & 0xFFF;
-	*(adc->ch3_destination) = (((uint16_t)(buffer->rx_buffer[6]))<<8 | buffer->rx_buffer[7]) & 0xFFF;
+	*(adc->ch0_destination) = (((uint16_t)(buffer->rx_buffer[0]))<<8 | buffer->rx_buffer[1]);// & 0xFFF;
+	*(adc->ch1_destination) = (((uint16_t)(buffer->rx_buffer[2]))<<8 | buffer->rx_buffer[3]);// & 0xFFF;
+	*(adc->ch2_destination) = (((uint16_t)(buffer->rx_buffer[4]))<<8 | buffer->rx_buffer[5]);// & 0xFFF;
+	*(adc->ch3_destination) = (((uint16_t)(buffer->rx_buffer[6]))<<8 | buffer->rx_buffer[7]);// & 0xFFF;
 }
 
