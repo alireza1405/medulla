@@ -27,9 +27,10 @@ typedef struct {
  *  configures the given analog comparator to operate with this driver.
  *  
  *  @param ac Pointer to the AC_t register for the port to configure.
+ *	@param therm_max 5 Bit value to set the scaler with.
  *  @return Returns a struct that can be used to reference the port.
  */
-ac_port_t ac_init_port(AC_t *ac);
+ac_port_t ac_init_port(AC_t *ac, uint8_t therm_max);
 
 /** @brief Sets a pin to be compared on the port
  *
